@@ -526,8 +526,15 @@ body::-webkit-scrollbar-thumb:hover { background: hsl(0, 0%, 70%); }
 .header-user-actions,
 .desktop-navigation-menu { display: none; }
 
+header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--white);
+}
+
 .header-main {
-  padding: 20px 0;
+  padding: 15px 0;
   border-bottom: 1px solid var(--cultured);
 }
 
@@ -822,8 +829,8 @@ body::-webkit-scrollbar-thumb:hover { background: hsl(0, 0%, 70%); }
 .slider-item {
   position: relative;
   min-width: 100%;
-  max-height: 450px;
-  aspect-ratio: 1 / 1;
+  max-height: 225px;
+  aspect-ratio: 2 / 1;
   -webkit-border-radius: var(--border-radius-md);
           border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -842,29 +849,30 @@ body::-webkit-scrollbar-thumb:hover { background: hsl(0, 0%, 70%); }
 .banner-content {
   background: hsla(0, 0%, 100%, 0.8);
   position: absolute;
-  bottom: 25px;
-  left: 25px;
-  right: 25px;
-  padding: 20px 25px;
+  bottom: 10px;
+  left: 10px;
+  width: max-content;
+  max-width: calc(100% - 20px);
+  padding: 10px;
   -webkit-border-radius: var(--border-radius-md);
           border-radius: var(--border-radius-md);
 }
 
 .banner-subtitle {
   color: var(--salmon-pink);
-  font-size: var(--fs-7);
+  font-size: 0.75rem;
   font-weight: var(--weight-500);
   text-transform: capitalize;
-  letter-spacing: 2px;
-  margin-bottom: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
 }
 
 .banner-title {
   color: var(--eerie-black);
-  font-size: var(--fs-1);
+  font-size: 1rem;
   text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 10px;
+  line-height: 1.1;
+  margin-bottom: 5px;
 }
 
 .banner-text { display: none; }
@@ -2212,7 +2220,7 @@ footer {
    * #BANNER
    */
 
-  .slider-item { aspect-ratio: 5 / 3; }
+  .slider-item { aspect-ratio: 10 / 3; }
 
   .banner-content {
     top: 50%;
@@ -2348,7 +2356,7 @@ footer {
    * #BANNER
    */
 
-  .slider-item { aspect-ratio: 4 / 2; }
+  .slider-item { aspect-ratio: 4 / 1; }
 
   .banner-content { background: none; }
 
@@ -2483,7 +2491,7 @@ footer {
 
   .slider-item {
     aspect-ratio: auto;
-    height: 350px;
+    height: 175px;
   }
 
   .banner-content { max-width: 380px; }
@@ -2652,6 +2660,17 @@ footer {
     gap: 5px;
   }
 
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--white);
+  }
+
+  .header-main {
+    padding: 25px 0;
+  }
+
   .header-social-container .social-link {
     padding: 5px;
     background: hsl(0, 0%, 95%);
@@ -2703,10 +2722,6 @@ footer {
 
   .desktop-navigation-menu {
     display: block;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--white);
   }
 
   .desktop-menu-category-list {
@@ -2887,7 +2902,7 @@ footer {
 
   .banner { margin-top: 0; }
 
-  .slider-item { height: 380px; }
+  .slider-item { height: 190px; }
 
   .banner-content {
     left: 75px;
@@ -3206,7 +3221,7 @@ footer {
    * #BANNER
    */
 
-  .slider-item { height: 450px; }
+  .slider-item { height: 225px; }
 
   .banner-content {
     left: 110px;

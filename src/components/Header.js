@@ -60,36 +60,36 @@ export default function Header({ onMenuOpenForSidebar }) {
         <div className="overlay active" onClick={closeMobile}></div>
       )}
 
-      <header>
-        {/* HEADER TOP */}
-        <div className="header-top">
-          <div className="container">
-            <ul className="header-social-container">
-              {['logo-facebook', 'logo-twitter', 'logo-instagram', 'logo-linkedin'].map((icon) => (
-                <li key={icon}>
-                  <a href="#" className="social-link">
-                    <ion-icon name={icon}></ion-icon>
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <div className="header-alert-news">
-              <p><b>Free Shipping</b> This Week Order Over - $55</p>
-            </div>
-            <div className="header-top-actions">
-              <select name="currency">
-                <option value="usd">USD $</option>
-                <option value="eur">EUR €</option>
-              </select>
-              <select name="language">
-                <option value="en-US">English</option>
-                <option value="es-ES">Español</option>
-                <option value="fr">Français</option>
-              </select>
-            </div>
+      {/* HEADER TOP - outside sticky header */}
+      <div className="header-top">
+        <div className="container">
+          <ul className="header-social-container">
+            {['logo-facebook', 'logo-twitter', 'logo-instagram', 'logo-linkedin'].map((icon) => (
+              <li key={icon}>
+                <a href="#" className="social-link">
+                  <ion-icon name={icon}></ion-icon>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div className="header-alert-news">
+            <p><b>Free Shipping</b> This Week Order Over - $55</p>
+          </div>
+          <div className="header-top-actions">
+            <select name="currency">
+              <option value="usd">USD $</option>
+              <option value="eur">EUR €</option>
+            </select>
+            <select name="language">
+              <option value="en-US">English</option>
+              <option value="es-ES">Español</option>
+              <option value="fr">Français</option>
+            </select>
           </div>
         </div>
+      </div>
 
+      <header>
         {/* HEADER MAIN */}
         <div className="header-main">
           <div className="container">
@@ -117,87 +117,6 @@ export default function Header({ onMenuOpenForSidebar }) {
             </div>
           </div>
         </div>
-      </header>
-
-        {/* DESKTOP NAV */}
-        <nav className="desktop-navigation-menu">
-          <div className="container">
-            <ul className="desktop-menu-category-list">
-              {/*this is menu home*/}
-              <li className="menu-category">
-                <a href="#" className="menu-title">Home</a>
-              </li>
-              {/*this is menu categories*/}
-              <li className="menu-category">
-                <a href="#" className="menu-title">Categories</a>
-                <div className="dropdown-panel">
-                  <ul className="dropdown-panel-list">
-                    <li className="menu-title"><a href="#">Solvents</a></li>
-                    {['Acids', 'Alkalis', 'Salts', 'Indicators', 'Buffer Solutions'].map(i => (
-                      <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                    ))}
-                    <li className="panel-list-item">
-                      <a href="#"><img src="/images/electronics-banner-1.jpg" alt="headphone collection" width="250" height="119" /></a>
-                    </li>
-                  </ul>
-                  <ul className="dropdown-panel-list">
-                    <li className="menu-title"><a href="#">Reagents</a></li>
-                    {['General Purpose Reagents', 'Analytical Reagents', 'Chromatography Reagents', 'Spectroscopy Reagents', 'Biotechnology Reagents'].map(i => (
-                      <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                    ))}
-                    <li className="panel-list-item">
-                      <a href="#"><img src="/images/mens-banner.jpg" alt="men's fashion" width="250" height="119" /></a>
-                    </li>
-                  </ul>
-                  <ul className="dropdown-panel-list">
-                    <li className="menu-title"><a href="#">Standards</a></li>
-                    {['AAS Standards', 'ICP Standards', 'UV-Vis Standards', 'HPLC Standards', 'GC Standards'].map(i => (
-                      <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                    ))}
-                    <li className="panel-list-item">
-                      <a href="#"><img src="/images/womens-banner.jpg" alt="women's fashion" width="250" height="119" /></a>
-                    </li>
-                  </ul>
-                  <ul className="dropdown-panel-list">
-                    <li className="menu-title"><a href="#">Indicators</a></li>
-                    {['Acid-Base Indicators', 'Redox Indicators', 'Complexometric Indicators', 'Fluorescent Indicators', 'Other Indicators'].map(i => (
-                      <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                    ))}
-                    <li className="panel-list-item">
-                      <a href="#"><img src="/images/electronics-banner-2.jpg" alt="mouse collection" width="250" height="119" /></a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
-              {/*this is menu Brands*/}
-              <li className="menu-category">
-                <a href="#" className="menu-title">Brands</a>
-                <ul className="dropdown-list">
-                  {['Merck', 'Loba Chemie', 'Sigma-Aldrich', 'Spectrochem'].map(i => (
-                    <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                </ul>
-              </li>
-              {/*this is menu Accecories*/}
-              <li className="menu-category">
-                <a href="#" className="menu-title">Accecories</a>
-                <ul className="dropdown-list">
-                  {['pH Meters', 'Conductivity Meters', 'Spectrophotometers', 'Chromatography Accessories', 'General Laboratory Equipment'].map(i => (
-                    <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                </ul>
-              </li>{/*this is menu Lab*/}
-              <li className="menu-category">
-                <a href="#" className="menu-title">Lab</a>
-                <ul className="dropdown-list">
-                  {['Glassware', 'Chemicals', 'Consumables', 'Equipment'].map(i => (
-                    <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                </ul>
-              </li>
-            </ul>
-          </div>
-        </nav>
 
         {/* MOBILE BOTTOM NAV */}
         <div className="mobile-bottom-navigation">
@@ -282,6 +201,88 @@ export default function Header({ onMenuOpenForSidebar }) {
             </ul>
           </div>
         </nav>
+
+      </header>
+
+      {/* DESKTOP NAV - outside sticky header, scrolls away naturally */}
+      <nav className="desktop-navigation-menu">
+        <div className="container">
+          <ul className="desktop-menu-category-list">
+            {/*this is menu home*/}
+            <li className="menu-category">
+              <a href="#" className="menu-title">Home</a>
+            </li>
+            {/*this is menu categories*/}
+            <li className="menu-category">
+              <a href="#" className="menu-title">Categories</a>
+              <div className="dropdown-panel">
+                <ul className="dropdown-panel-list">
+                  <li className="menu-title"><a href="#">Solvents</a></li>
+                  {['Acids', 'Alkalis', 'Salts', 'Indicators', 'Buffer Solutions'].map(i => (
+                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
+                  ))}
+                  <li className="panel-list-item">
+                    <a href="#"><img src="/images/electronics-banner-1.jpg" alt="headphone collection" width="250" height="119" /></a>
+                  </li>
+                </ul>
+                <ul className="dropdown-panel-list">
+                  <li className="menu-title"><a href="#">Reagents</a></li>
+                  {['General Purpose Reagents', 'Analytical Reagents', 'Chromatography Reagents', 'Spectroscopy Reagents', 'Biotechnology Reagents'].map(i => (
+                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
+                  ))}
+                  <li className="panel-list-item">
+                    <a href="#"><img src="/images/mens-banner.jpg" alt="men's fashion" width="250" height="119" /></a>
+                  </li>
+                </ul>
+                <ul className="dropdown-panel-list">
+                  <li className="menu-title"><a href="#">Standards</a></li>
+                  {['AAS Standards', 'ICP Standards', 'UV-Vis Standards', 'HPLC Standards', 'GC Standards'].map(i => (
+                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
+                  ))}
+                  <li className="panel-list-item">
+                    <a href="#"><img src="/images/womens-banner.jpg" alt="women's fashion" width="250" height="119" /></a>
+                  </li>
+                </ul>
+                <ul className="dropdown-panel-list">
+                  <li className="menu-title"><a href="#">Indicators</a></li>
+                  {['Acid-Base Indicators', 'Redox Indicators', 'Complexometric Indicators', 'Fluorescent Indicators', 'Other Indicators'].map(i => (
+                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
+                  ))}
+                  <li className="panel-list-item">
+                    <a href="#"><img src="/images/electronics-banner-2.jpg" alt="mouse collection" width="250" height="119" /></a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+            {/*this is menu Brands*/}
+            <li className="menu-category">
+              <a href="#" className="menu-title">Brands</a>
+              <ul className="dropdown-list">
+                {['Merck', 'Loba Chemie', 'Sigma-Aldrich', 'Spectrochem'].map(i => (
+                  <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
+                ))}
+              </ul>
+            </li>
+            {/*this is menu Accecories*/}
+            <li className="menu-category">
+              <a href="#" className="menu-title">Accecories</a>
+              <ul className="dropdown-list">
+                {['pH Meters', 'Conductivity Meters', 'Spectrophotometers', 'Chromatography Accessories', 'General Laboratory Equipment'].map(i => (
+                  <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
+                ))}
+              </ul>
+            </li>{/*this is menu Lab*/}
+            <li className="menu-category">
+              <a href="#" className="menu-title">Lab</a>
+              <ul className="dropdown-list">
+                {['Glassware', 'Chemicals', 'Consumables', 'Equipment'].map(i => (
+                  <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
+                ))}
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </nav>
 
     </>
   );
