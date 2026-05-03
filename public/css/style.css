@@ -439,6 +439,16 @@ header {
   background: var(--white);
 }
 
+:root {
+  --sticky-header-height: 90px;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --sticky-header-height: 56px;
+  }
+}
+
 .header-main {
   padding: 8px 0;
   border-bottom: 1px solid var(--cultured);
@@ -1213,6 +1223,48 @@ header {
 \*-----------------------------------*/
 
 .product-main { margin-bottom: 30px; }
+
+.product-tabs-bar {
+  position: sticky;
+  top: var(--sticky-header-height);
+  z-index: 50;
+  background: var(--white);
+  border-bottom: 2px solid var(--cultured);
+  margin-bottom: 25px;
+}
+
+.product-tabs {
+  display: flex;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.product-tabs::-webkit-scrollbar { display: none; }
+
+.product-tab-btn {
+  flex-shrink: 0;
+  padding: 12px 20px;
+  font-size: var(--fs-7);
+  font-weight: var(--weight-600);
+  color: var(--sonic-silver);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: color 0.2s, border-color 0.2s;
+}
+
+.product-tab-btn:hover { color: var(--salmon-pink); }
+
+.product-tab-btn.active {
+  color: var(--salmon-pink);
+  border-bottom-color: var(--salmon-pink);
+}
+
 
 .product-grid {
   display: grid;
