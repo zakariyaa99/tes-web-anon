@@ -94,7 +94,7 @@ export default function Header({ onMenuOpenForSidebar }) {
         <div className="header-main">
           <div className="container">
             <a href="#" className="header-logo">
-              <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="150" height="55" />
+              <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="110" height="40" />
             </a>
             <div className="header-search-container">
               <input type="search" name="search" className="search-field" placeholder="Search your chemical products..." />
