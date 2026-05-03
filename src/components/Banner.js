@@ -1,8 +1,35 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+
 export default function Banner() {
+  const sliderRef = useRef(null);
+
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    let scrollAmount = 0;
+    const slideWidth = slider.offsetWidth;
+    const maxScroll = slider.scrollWidth - slideWidth;
+
+    const autoAdvance = setInterval(() => {
+      if (slider.scrollLeft >= maxScroll - 10) {
+        // Back to start
+        slider.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        // Next slide
+        slider.scrollBy({ left: slideWidth, behavior: 'smooth' });
+      }
+    }, 5000); // Advance every 5 seconds
+
+    return () => clearInterval(autoAdvance);
+  }, []);
+
   return (
     <div className="banner">
       <div className="container">
-        <div className="slider-container has-scrollbar">
+        <div className="slider-container has-scrollbar" ref={sliderRef}>
 
           <div className="slider-item">
             <img src="/images/banner-1.jpg" alt="women's latest fashion sale" className="banner-img" />
