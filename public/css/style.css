@@ -440,13 +440,11 @@ header {
 }
 
 :root {
-  --sticky-header-height: 90px;
+  --sticky-header-height: 56px;
 }
 
 @media (min-width: 1024px) {
-  :root {
-    --sticky-header-height: 56px;
-  }
+  /* Offset already set to 56px in :root */
 }
 
 .header-main {
@@ -454,11 +452,21 @@ header {
   border-bottom: 1px solid var(--cultured);
 }
 
-.header-logo { margin-bottom: 5px; }
+.header-main .container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+}
 
-.header-logo img { margin: auto; }
+.header-logo { margin-bottom: 0; }
 
-.header-search-container { position: relative; }
+.header-logo img { margin: 0; }
+
+.header-search-container { 
+  flex-grow: 1;
+  position: relative; 
+}
 
 .header-search-container .search-field {
   font-size: var(--fs-7);
