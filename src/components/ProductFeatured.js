@@ -1,6 +1,6 @@
 const deals = [
   {
-    img: '/images/products/shampoo.jpg',
+    img: '/images/products/labkimiaproduk.png',
     alt: 'shampoo, conditioner & facewash packs',
     title: 'shampoo, conditioner & facewash packs',
     stars: [true, true, true, false, false],
@@ -10,7 +10,7 @@ const deals = [
     available: 40,
   },
   {
-    img: '/images/products/jewellery-1.jpg',
+    img: '/images/products/labkimiaproduk.png',
     alt: 'Rose Gold diamonds Earring',
     title: 'Rose Gold diamonds Earring',
     stars: [true, true, true, false, false],

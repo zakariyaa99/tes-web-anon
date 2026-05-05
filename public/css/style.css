@@ -779,7 +779,6 @@ header {
 .slider-item {
   position: relative;
   min-width: 100%;
-  max-height: 225px;
   aspect-ratio: 2 / 1;
   border-radius: var(--border-radius-md);
   overflow: hidden;
@@ -2719,8 +2718,11 @@ footer {
     margin-top: 0;
   }
 
-  .slider-item {
-    height: 190px;
+  .banner .container { max-width: 1030px; }
+
+  .slider-item { 
+    height: 500px;
+    max-height: unset;
   }
 
   .banner-content {

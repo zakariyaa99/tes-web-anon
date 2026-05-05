@@ -665,8 +665,7 @@ body::-webkit-scrollbar-thumb:hover { background: hsl(0, 0%, 70%); }
 .slider-item {
   position: relative;
   min-width: 100%;
-  max-height: 450px;
-  aspect-ratio: 1 / 1;
+  aspect-ratio: 2 / 1;
   border-radius: var(--border-radius-md);
   overflow: hidden;
   scroll-snap-align: start;
@@ -2343,9 +2342,12 @@ footer {
    * #BANNER 
    */
 
-  .banner { margin-top: 0; }
+  .banner .container { max-width: 1030px; }
 
-  .slider-item { height: 380px; }
+  .slider-item { 
+    height: 500px;
+    max-height: unset;
+  }
 
   .banner-content {
     left: 75px;
@@ -2621,7 +2623,7 @@ footer {
    * #BANNER
    */
 
-  .slider-item { height: 450px; }
+  .slider-item { height: 500px; }
 
   .banner-content {
     left: 110px;
