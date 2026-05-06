@@ -100,15 +100,26 @@ export default function ProductGrid() {
       }
 
       try {
-        const res = await fetch(apiUrl);
-        if (!res.ok) throw new Error("Failed to fetch products");
-        const data = await res.json();
+        console.log("Fetching from URL:", apiUrl);
+        // Add cache: 'no-store' to ensure we aren't getting a stale {} response from Next.js cache
+        const res = await fetch(apiUrl, { cache: 'no-store' }); 
+        
+        console.log("Response status:", res.status, res.statusText);
+        const text = await res.text();
+        console.log("Raw response prefix (first 200 chars):", text.substring(0, 200));
+        
+        let data;
+        try {
+          data = JSON.parse(text);
+        } catch (e) {
+          console.error("Failed to parse JSON. Raw text was:", text);
+          throw new Error("API returned invalid JSON");
+        }
         
         // Ensure data is an array to avoid 'data.map is not a function' errors
         let productsArray = data;
         
         if (!Array.isArray(data)) {
-          // Sometimes APIs wrap the array in an object like { data: [...] } or { items: [...] }
           if (data && Array.isArray(data.data)) {
             productsArray = data.data;
           } else if (data && Array.isArray(data.items)) {
