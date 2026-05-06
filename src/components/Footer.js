@@ -47,7 +47,7 @@ export default function Footer() {
 
           <ul className="footer-nav-list">
             <li className="footer-nav-item"><h2 className="nav-title">Products</h2></li>
-            {['Prices drop','New products','Best sales','Contact us','Sitemap'].map(l => (
+            {['Prices drop','All products','Best sales','Contact us','Sitemap'].map(l => (
               <li className="footer-nav-item" key={l}><a href="#" className="footer-nav-link">{l}</a></li>
             ))}
           </ul>
@@ -61,7 +61,7 @@ export default function Footer() {
 
           <ul className="footer-nav-list">
             <li className="footer-nav-item"><h2 className="nav-title">Services</h2></li>
-            {['Prices drop','New products','Best sales','Contact us','Sitemap'].map(l => (
+            {['Prices drop','All products','Best sales','Contact us','Sitemap'].map(l => (
               <li className="footer-nav-item" key={l}><a href="#" className="footer-nav-link">{l}</a></li>
             ))}
           </ul>

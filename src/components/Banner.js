@@ -48,18 +48,18 @@ export default function Banner() {
             </div>*/}
           </div>
 
-          <div className="slider-item">
-            <img src="/images/banner-3.jpg" alt="new fashion summer sale" className="banner-img" />
-            {/*<div className="banner-content">
-              <p className="banner-subtitle">Sale Offer</p>
-              <h2 className="banner-title">New fashion summer sale</h2>
-              <p className="banner-text">starting at $ <b>29</b>.99</p>
-              <a href="#" className="banner-btn">Shop now</a>
-            </div>*/}
-          </div>
+          {/*<div className="slider-item">
+            < img src="/images/banner-3.jpg" alt="new fashion summer sale" className="banner-img" />
+          <div className="banner-content">
+            <p className="banner-subtitle">Sale Offer</p>
+            <h2 className="banner-title">New fashion summer sale</h2>
+            <p className="banner-text">starting at $ <b>29</b>.99</p>
+            <a href="#" className="banner-btn">Shop now</a>
+          </div>*
+        </div>*/}
 
         </div>
       </div>
-    </div>
+    </div >
   );
 }

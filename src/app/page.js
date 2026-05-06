@@ -51,8 +51,8 @@ export default function Home() {
           </div>
         </div>
 
-        <TestimonialCTAService />
-        <Blog />
+        {/*<TestimonialCTAService />*/}
+        {/*<Blog />*/}
       </main>
 
       <Footer />
