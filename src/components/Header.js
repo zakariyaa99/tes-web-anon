@@ -103,9 +103,45 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 className="search-field" 
                 placeholder="Search your chemical products..." 
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  const grid = document.getElementById('product-grid');
+                  if (grid) {
+                    const headerOffset = 100;
+                    const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                  }
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    const grid = document.getElementById('product-grid');
+                    if (grid) {
+                      const headerOffset = 100;
+                      const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                    }
+                  }
+                }}
+                onFocus={() => {
+                  const grid = document.getElementById('product-grid');
+                  if (grid) {
+                    const headerOffset = 100;
+                    const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                  }
+                }}
               />
-              <button className="search-btn">
+              <button 
+                className="search-btn"
+                onClick={() => {
+                  const grid = document.getElementById('product-grid');
+                  if (grid) {
+                    const headerOffset = 100;
+                    const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+                  }
+                }}
+              >
                 <ion-icon name="search-outline"></ion-icon>
               </button>
             </div>

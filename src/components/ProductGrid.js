@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
 
@@ -9,6 +9,37 @@ export default function ProductGrid({ searchQuery = '' }) {
   const [activeTab, setActiveTab] = useState('All Products');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsData, setProductsData] = useState({ 'All Products': [] });
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+  const tabsRef = useRef(null);
+
+  const checkScroll = () => {
+    const el = tabsRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 0);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const el = tabsRef.current;
+    if (el) el.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+    return () => {
+      if (el) el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, []);
+
+  // Re-check when tabs change (e.g. after data loads)
+  useEffect(() => {
+    checkScroll();
+  }, [productsData]);
+
+  const scrollTabs = (dir) => {
+    const el = tabsRef.current;
+    if (el) el.scrollBy({ left: dir * 160, behavior: 'smooth' });
+  };
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -86,9 +117,32 @@ export default function ProductGrid({ searchQuery = '' }) {
   const currentProducts = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (
-    <div className="product-main">
-      <div className="product-tabs-bar">
-        <div className="product-tabs">
+    <div className="product-main" id="product-grid">
+      <div className="product-tabs-bar" style={{ display: 'flex', alignItems: 'stretch', padding: 0 }}>
+        {canScrollLeft && (
+          <button
+            onClick={() => scrollTabs(-1)}
+            aria-label="Scroll tabs left"
+            style={{
+              flexShrink: 0,
+              width: 36,
+              background: 'var(--white)',
+              border: 'none',
+              borderRight: '1px solid var(--cultured)',
+              cursor: 'pointer',
+              fontSize: 24,
+              color: 'var(--sonic-silver)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              alignSelf: 'stretch',
+              padding: 0,
+            }}
+          >
+            ‹
+          </button>
+        )}
+        <div className="product-tabs" ref={tabsRef} style={{ flex: 1, minWidth: 0 }} onScroll={checkScroll}>
           {TABS.map((tab) => (
             <button
               key={tab}
@@ -102,6 +156,29 @@ export default function ProductGrid({ searchQuery = '' }) {
             </button>
           ))}
         </div>
+        {canScrollRight && (
+          <button
+            onClick={() => scrollTabs(1)}
+            aria-label="Scroll tabs right"
+            style={{
+              flexShrink: 0,
+              width: 36,
+              background: 'var(--white)',
+              border: 'none',
+              borderLeft: '1px solid var(--cultured)',
+              cursor: 'pointer',
+              fontSize: 24,
+              color: 'var(--sonic-silver)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              alignSelf: 'stretch',
+              padding: 0,
+            }}
+          >
+            ›
+          </button>
+        )}
       </div>
 
       <div className="product-grid">
