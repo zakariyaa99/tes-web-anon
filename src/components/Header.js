@@ -42,7 +42,7 @@ function MobileAccordionItem({ label, items, isOpen, onToggle }) {
   );
 }
 
-export default function Header({ onMenuOpenForSidebar }) {
+export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQuery }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
@@ -97,7 +97,14 @@ export default function Header({ onMenuOpenForSidebar }) {
               <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="110" height="40" />
             </a>
             <div className="header-search-container">
-              <input type="search" name="search" className="search-field" placeholder="Search your chemical products..." />
+              <input 
+                type="search" 
+                name="search" 
+                className="search-field" 
+                placeholder="Search your chemical products..." 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
               <button className="search-btn">
                 <ion-icon name="search-outline"></ion-icon>
               </button>

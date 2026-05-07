@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabaseClient';
 
 
 
-export default function ProductGrid() {
+export default function ProductGrid({ searchQuery = '' }) {
   const [activeTab, setActiveTab] = useState('All Products');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsData, setProductsData] = useState({ 'All Products': [] });
@@ -66,9 +66,23 @@ export default function ProductGrid() {
   }, []);
 
   const TABS = Object.keys(productsData);
-  const products = productsData[activeTab] || [];
+  let products = productsData[activeTab] || [];
+
+  if (searchQuery.trim()) {
+    const lowerQuery = searchQuery.toLowerCase();
+    products = products.filter(p => 
+      p.title.toLowerCase().includes(lowerQuery) || 
+      p.category.toLowerCase().includes(lowerQuery)
+    );
+  }
+
+  // Reset to first page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, activeTab]);
+
   const ITEMS_PER_PAGE = 12;
-  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
   const currentProducts = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   return (

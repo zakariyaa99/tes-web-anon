@@ -18,6 +18,7 @@ export default function Home() {
   const [modalClosed, setModalClosed] = useState(true);
   const [toastClosed, setToastClosed] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   return (
     <>
@@ -31,7 +32,11 @@ export default function Home() {
       {!toastClosed && <NotificationToast onClose={() => setToastClosed(true)} />}
 
       {/* Header */}
-      <Header onMenuOpenForSidebar={() => setSidebarOpen(true)} />
+      <Header 
+        onMenuOpenForSidebar={() => setSidebarOpen(true)} 
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+      />
 
       {/* Main Content */}
       <main>
@@ -46,7 +51,7 @@ export default function Home() {
             <div className="product-box">
               {/*<ProductMinimal />*/}
               {/*<ProductFeatured />*/}
-              <ProductGrid />
+              <ProductGrid searchQuery={searchQuery} />
             </div>
           </div>
         </div>
