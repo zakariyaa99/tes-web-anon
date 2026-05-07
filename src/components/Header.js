@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import SearchDropdown from './SearchDropdown';
 
 const mobileMenuCategories = [
   {
@@ -42,16 +43,32 @@ function MobileAccordionItem({ label, items, isOpen, onToggle }) {
   );
 }
 
-export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQuery }) {
+export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQuery, onSearchActive }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
   const [currOpen, setCurrOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const openMobile = () => setMobileMenuOpen(true);
   const closeMobile = () => setMobileMenuOpen(false);
 
   const toggleAccordion = (i) => setOpenAccordion(openAccordion === i ? null : i);
+
+  const scrollToGrid = useCallback(() => {
+    const grid = document.getElementById('product-grid');
+    if (grid) {
+      const headerOffset = 60;
+      const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+    }
+  }, []);
+
+  const handleSearchSubmit = useCallback(() => {
+    setDropdownOpen(false);
+    if (onSearchActive) onSearchActive();
+    scrollToGrid();
+  }, [scrollToGrid, onSearchActive]);
 
   return (
     <>
@@ -96,7 +113,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
             <a href="#" className="header-logo">
               <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="110" height="40" />
             </a>
-            <div className="header-search-container">
+            <div className="header-search-container" style={{ position: 'relative' }}>
               <input 
                 type="search" 
                 name="search" 
@@ -105,45 +122,33 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
-                  const grid = document.getElementById('product-grid');
-                  if (grid) {
-                    const headerOffset = 60;
-                    const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                  }
+                  setDropdownOpen(true);
+                  if (onSearchActive) onSearchActive();
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    const grid = document.getElementById('product-grid');
-                    if (grid) {
-                      const headerOffset = 60;
-                      const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-                      window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                    }
+                    handleSearchSubmit();
+                  } else if (e.key === 'Escape') {
+                    setDropdownOpen(false);
                   }
                 }}
                 onFocus={() => {
-                  const grid = document.getElementById('product-grid');
-                  if (grid) {
-                    const headerOffset = 60;
-                    const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                  }
+                  setDropdownOpen(true);
+                  if (onSearchActive) onSearchActive();
                 }}
               />
               <button 
                 className="search-btn"
-                onClick={() => {
-                  const grid = document.getElementById('product-grid');
-                  if (grid) {
-                    const headerOffset = 60;
-                    const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-                    window.scrollTo({ top: offsetPosition, behavior: "smooth" });
-                  }
-                }}
+                onClick={handleSearchSubmit}
               >
                 <ion-icon name="search-outline"></ion-icon>
               </button>
+              <SearchDropdown
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                isOpen={dropdownOpen}
+                onClose={() => setDropdownOpen(false)}
+              />
             </div>
             <div className="header-user-actions">
               <button className="action-btn">

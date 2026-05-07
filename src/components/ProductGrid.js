@@ -100,11 +100,12 @@ export default function ProductGrid({ searchQuery = '' }) {
   let products = productsData[activeTab] || [];
 
   if (searchQuery.trim()) {
-    const lowerQuery = searchQuery.toLowerCase();
-    products = products.filter(p => 
-      p.title.toLowerCase().includes(lowerQuery) || 
-      p.category.toLowerCase().includes(lowerQuery)
-    );
+    const words = searchQuery.toLowerCase().split(/\s+/).filter(w => w.length >= 1);
+    products = products.filter(p => {
+      const title = p.title.toLowerCase();
+      const category = p.category.toLowerCase();
+      return words.some(word => title.includes(word) || category.includes(word));
+    });
   }
 
   // Reset to first page when search changes
