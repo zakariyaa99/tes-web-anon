@@ -3,92 +3,12 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
 
-const fallbackProductsByTab = {
-  'All Products': [
-    {
-      img1: '/images/products/labkimiaproduk.png',
-      img2: '/images/products/labkimiaproduk.png',
-      alt: 'Mens Winter Leathers Jackets',
-      badge: 'Ready Stock',
-      badgeClass: '',
-      category: 'jacket',
-      title: 'Mens Winter Leathers Jackets',
-      stars: [true, true, true, false, false],
-      price: '$48.00',
-      oldPrice: '$75.00'
-    },
-    {
-      img1: '/images/products/labkimiaproduk.png',
-      img2: '/images/products/labkimiaproduk.png',
-      alt: 'Pure Garment Dyed Cotton Shirt',
-      badge: 'sale',
-      badgeClass: 'angle black',
-      category: 'shirt',
-      title: 'Pure Garment Dyed Cotton Shirt',
-      stars: [true, true, true, false, false],
-      price: '$45.00',
-      oldPrice: '$56.00'
-    },
-    {
-      img1: '/images/products/labkimiaproduk.png',
-      img2: '/images/products/labkimiaproduk.png',
-      alt: 'MEN Yarn Fleece Full-Zip Jacket',
-      badge: null,
-      badgeClass: '',
-      category: 'Jacket',
-      title: 'MEN Yarn Fleece Full-Zip Jacket',
-      stars: [true, true, true, false, false],
-      price: '$58.00',
-      oldPrice: '$65.00'
-    },
-    {
-      img1: '/images/products/labkimiaproduk.png',
-      img2: '/images/products/labkimiaproduk.png',
-      alt: 'Black Floral Wrap Midi Skirt',
-      badge: 'new',
-      badgeClass: 'angle pink',
-      category: 'skirt',
-      title: 'Black Floral Wrap Midi Skirt',
-      stars: [true, true, true, true, true],
-      price: '$25.00',
-      oldPrice: '$35.00'
-    },
-    {
-      img1: '/images/products/labkimiaproduk.png',
-      img2: '/images/products/labkimiaproduk.png',
-      alt: "Casual Men's Brown shoes",
-      badge: null,
-      badgeClass: '',
-      category: 'casual',
-      title: "Casual Men's Brown shoes",
-      stars: [true, true, true, true, true],
-      price: '$99.00',
-      oldPrice: '$105.00'
-    },
-    {
-      img1: '/images/products/labkimiaproduk.png',
-      img2: '/images/products/labkimiaproduk.png',
-      alt: 'Pocket Watch Leather Pouch',
-      badge: 'sale',
-      badgeClass: 'angle black',
-      category: 'watches',
-      title: 'Pocket Watch Leather Pouch',
-      stars: [true, true, true, false, false],
-      price: '$150.00',
-      oldPrice: '$170.00'
-    }
-  ],
-  'Best Sellers': [],
-  'Featured': [],
-  'On Sale': []
-};
 
-const TABS = Object.keys(fallbackProductsByTab);
 
 export default function ProductGrid() {
   const [activeTab, setActiveTab] = useState('All Products');
   const [currentPage, setCurrentPage] = useState(1);
-  const [productsData, setProductsData] = useState(fallbackProductsByTab);
+  const [productsData, setProductsData] = useState({ 'All Products': [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -108,13 +28,17 @@ export default function ProductGrid() {
 
           const priceStr = item.harga ? `Rp ${item.harga.toLocaleString()}` : 'Rp 0';
 
+          let rawType = item.product_type || 'Uncategorized';
+          let oneWordType = rawType.split(' ')[0];
+          let categoryStr = oneWordType.charAt(0).toUpperCase() + oneWordType.slice(1).toLowerCase();
+
           return {
             img1: '/images/products/labkimiaproduk.png',
             img2: '/images/products/labkimiaproduk.png',
             alt: item.nama_produk || 'Product Image',
             badge: item.stok > 0 ? null : 'sold out',
             badgeClass: item.stok > 0 ? '' : 'angle black',
-            category: item.product_type || 'Uncategorized',
+            category: categoryStr,
             title: item.nama_produk || 'Untitled Product',
             stars: starsArray,
             price: priceStr,
@@ -122,10 +46,15 @@ export default function ProductGrid() {
           };
         });
 
-        setProductsData(prev => ({
-          ...prev,
-          'All Products': formattedProducts
-        }));
+        const newProductsData = { 'All Products': formattedProducts };
+        formattedProducts.forEach(p => {
+          if (!newProductsData[p.category]) {
+            newProductsData[p.category] = [];
+          }
+          newProductsData[p.category].push(p);
+        });
+
+        setProductsData(newProductsData);
       } catch (err) {
         console.error("Failed to load products from Supabase:", err);
       } finally {
@@ -136,6 +65,7 @@ export default function ProductGrid() {
     fetchProducts();
   }, []);
 
+  const TABS = Object.keys(productsData);
   const products = productsData[activeTab] || [];
   const ITEMS_PER_PAGE = 12;
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);

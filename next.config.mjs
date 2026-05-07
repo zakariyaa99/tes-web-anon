@@ -9,11 +9,6 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
-  experimental: {
-    turbopack: {
-      root: __dirname,
-    },
-  },
 };
 
 export default nextConfig;
