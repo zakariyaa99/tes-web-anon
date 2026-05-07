@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
 const fallbackProductsByTab = {
   'All Products': [
@@ -92,67 +93,32 @@ export default function ProductGrid() {
 
   useEffect(() => {
     async function fetchProducts() {
-      const apiUrl = process.env.NEXT_PUBLIC_SHEETS_API_URL;
-      if (!apiUrl) {
-        console.warn("NEXT_PUBLIC_SHEETS_API_URL is not defined. Using fallback data.");
-        setLoading(false);
-        return;
-      }
-
       try {
-        console.log("Fetching from URL:", apiUrl);
-        // Add cache: 'no-store' to ensure we aren't getting a stale {} response from Next.js cache
-        const res = await fetch(apiUrl, { cache: 'no-store' }); 
+        const { data, error } = await supabase.from('products').select('*');
         
-        console.log("Response status:", res.status, res.statusText);
-        const text = await res.text();
-        console.log("Raw response prefix (first 200 chars):", text.substring(0, 200));
-        
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch (e) {
-          console.error("Failed to parse JSON. Raw text was:", text);
-          throw new Error("API returned invalid JSON");
-        }
-        
-        // Ensure data is an array to avoid 'data.map is not a function' errors
-        let productsArray = data;
-        
-        if (!Array.isArray(data)) {
-          if (data && Array.isArray(data.data)) {
-            productsArray = data.data;
-          } else if (data && Array.isArray(data.items)) {
-            productsArray = data.items;
-          } else if (data && Array.isArray(data.products)) {
-            productsArray = data.products;
-          } else {
-            console.error("Expected an array but received:", data);
-            throw new Error("Google Sheets API returned invalid data format. Expected an array.");
-          }
+        if (error) {
+          throw error;
         }
 
-        // Map the fetched Google Sheets data to match the component's expected structure
+        const productsArray = Array.isArray(data) ? data : [];
+
+        // Map the fetched Supabase data to match the component's expected structure
         const formattedProducts = productsArray.map(item => {
           let starsArray = [true, true, true, false, false]; // Default stars
-          if (Array.isArray(item.stars)) {
-            starsArray = item.stars;
-          } else if (item.rating) {
-            const ratingNum = parseInt(item.rating) || 0;
-            starsArray = Array.from({ length: 5 }, (_, i) => i < ratingNum);
-          }
+
+          const priceStr = item.harga ? `Rp ${item.harga.toLocaleString()}` : 'Rp 0';
 
           return {
-            img1: item.img1 || item.image || '/images/products/labkimiaproduk.png',
-            img2: item.img2 || item.image || '/images/products/labkimiaproduk.png',
-            alt: item.alt || item.title || item.name || 'Product Image',
-            badge: item.badge || null,
-            badgeClass: item.badgeClass || '',
-            category: item.category || 'Uncategorized',
-            title: item.title || item.name || 'Untitled Product',
+            img1: '/images/products/labkimiaproduk.png',
+            img2: '/images/products/labkimiaproduk.png',
+            alt: item.nama_produk || 'Product Image',
+            badge: item.stok > 0 ? null : 'sold out',
+            badgeClass: item.stok > 0 ? '' : 'angle black',
+            category: item.product_type || 'Uncategorized',
+            title: item.nama_produk || 'Untitled Product',
             stars: starsArray,
-            price: item.price?.toString().startsWith('$') ? item.price : `$${item.price || '0.00'}`,
-            oldPrice: item.oldPrice ? (item.oldPrice.toString().startsWith('$') ? item.oldPrice : `$${item.oldPrice}`) : null,
+            price: priceStr,
+            oldPrice: null,
           };
         });
 
@@ -161,7 +127,7 @@ export default function ProductGrid() {
           'All Products': formattedProducts
         }));
       } catch (err) {
-        console.error("Failed to load products from Google Sheets:", err);
+        console.error("Failed to load products from Supabase:", err);
       } finally {
         setLoading(false);
       }
