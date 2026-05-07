@@ -116,33 +116,35 @@ export default function ProductGrid({ searchQuery = '' }) {
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
   const currentProducts = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  const arrowBtnStyle = (visible) => ({
+    flexShrink: 0,
+    width: 36,
+    background: 'var(--white)',
+    border: 'none',
+    cursor: visible ? 'pointer' : 'default',
+    fontSize: 24,
+    color: 'var(--sonic-silver)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'stretch',
+    padding: 0,
+    opacity: visible ? 1 : 0,
+    pointerEvents: visible ? 'auto' : 'none',
+    transition: 'opacity 0.2s',
+  });
+
   return (
     <div className="product-main" id="product-grid">
       <div className="product-tabs-bar" style={{ display: 'flex', alignItems: 'stretch', padding: 0 }}>
-        {canScrollLeft && (
-          <button
-            onClick={() => scrollTabs(-1)}
-            aria-label="Scroll tabs left"
-            style={{
-              flexShrink: 0,
-              width: 36,
-              background: 'var(--white)',
-              border: 'none',
-              borderRight: '1px solid var(--cultured)',
-              cursor: 'pointer',
-              fontSize: 24,
-              color: 'var(--sonic-silver)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              alignSelf: 'stretch',
-              padding: 0,
-            }}
-          >
-            ‹
-          </button>
-        )}
-        <div className="product-tabs" ref={tabsRef} style={{ flex: 1, minWidth: 0 }} onScroll={checkScroll}>
+        <button
+          onClick={() => scrollTabs(-1)}
+          aria-label="Scroll tabs left"
+          style={{ ...arrowBtnStyle(canScrollLeft), borderRight: '1px solid var(--cultured)' }}
+        >
+          ‹
+        </button>
+        <div className="product-tabs" ref={tabsRef} style={{ flex: 1, minWidth: 0 }}>
           {TABS.map((tab) => (
             <button
               key={tab}
@@ -156,29 +158,13 @@ export default function ProductGrid({ searchQuery = '' }) {
             </button>
           ))}
         </div>
-        {canScrollRight && (
-          <button
-            onClick={() => scrollTabs(1)}
-            aria-label="Scroll tabs right"
-            style={{
-              flexShrink: 0,
-              width: 36,
-              background: 'var(--white)',
-              border: 'none',
-              borderLeft: '1px solid var(--cultured)',
-              cursor: 'pointer',
-              fontSize: 24,
-              color: 'var(--sonic-silver)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              alignSelf: 'stretch',
-              padding: 0,
-            }}
-          >
-            ›
-          </button>
-        )}
+        <button
+          onClick={() => scrollTabs(1)}
+          aria-label="Scroll tabs right"
+          style={{ ...arrowBtnStyle(canScrollRight), borderLeft: '1px solid var(--cultured)' }}
+        >
+          ›
+        </button>
       </div>
 
       <div className="product-grid">

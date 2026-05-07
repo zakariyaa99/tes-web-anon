@@ -107,7 +107,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                   setSearchQuery(e.target.value);
                   const grid = document.getElementById('product-grid');
                   if (grid) {
-                    const headerOffset = 100;
+                    const headerOffset = 60;
                     const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
                     window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                   }
@@ -116,7 +116,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                   if (e.key === 'Enter') {
                     const grid = document.getElementById('product-grid');
                     if (grid) {
-                      const headerOffset = 100;
+                      const headerOffset = 60;
                       const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
                       window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                     }
@@ -125,7 +125,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 onFocus={() => {
                   const grid = document.getElementById('product-grid');
                   if (grid) {
-                    const headerOffset = 100;
+                    const headerOffset = 60;
                     const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
                     window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                   }
@@ -136,7 +136,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 onClick={() => {
                   const grid = document.getElementById('product-grid');
                   if (grid) {
-                    const headerOffset = 100;
+                    const headerOffset = 60;
                     const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
                     window.scrollTo({ top: offsetPosition, behavior: "smooth" });
                   }
