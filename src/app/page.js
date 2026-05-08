@@ -19,7 +19,6 @@ export default function Home() {
   const [toastClosed, setToastClosed] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchActive, setSearchActive] = useState(false);
 
   return (
     <>
@@ -37,19 +36,11 @@ export default function Home() {
         onMenuOpenForSidebar={() => setSidebarOpen(true)} 
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
-        onSearchActive={() => setSearchActive(true)}
       />
 
       {/* Main Content */}
       <main>
-        <div style={{
-          maxHeight: searchActive ? 0 : 1000,
-          overflow: 'hidden',
-          transition: 'max-height 0.4s ease',
-          opacity: searchActive ? 0 : 1,
-        }}>
-          <Banner />
-        </div>
+        <Banner />
         {/* <CategoryStrip /> */}
 
         {/* Product Container: Sidebar + Product Box */}

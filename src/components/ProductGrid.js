@@ -117,6 +117,24 @@ export default function ProductGrid({ searchQuery = '' }) {
   const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE) || 1;
   const currentProducts = products.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
+  const scrollToGridTop = () => {
+    // Use setTimeout to ensure the DOM updates with the new products
+    // before we calculate the offset and scroll.
+    setTimeout(() => {
+      const grid = document.getElementById('product-grid');
+      if (grid) {
+        const headerOffset = 60;
+        const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+      }
+    }, 50);
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+    scrollToGridTop();
+  };
+
   const arrowBtnStyle = (visible) => ({
     flexShrink: 0,
     width: 36,
@@ -153,6 +171,7 @@ export default function ProductGrid({ searchQuery = '' }) {
               onClick={() => {
                 setActiveTab(tab);
                 setCurrentPage(1);
+                scrollToGridTop();
               }}
             >
               {tab}
@@ -168,7 +187,9 @@ export default function ProductGrid({ searchQuery = '' }) {
         </button>
       </div>
 
-      <div className="product-grid">
+      {/* Added minHeight to prevent the page from shrinking abruptly on the last page, 
+          which would prevent the browser from being able to scroll to the top of the grid */}
+      <div className="product-grid" style={{ minHeight: '800px' }}>
         {currentProducts.map((p, i) => (
           <div className="showcase" key={i}>
             <div className="showcase-banner">
@@ -201,7 +222,7 @@ export default function ProductGrid({ searchQuery = '' }) {
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '40px', gap: '15px' }}>
           <button 
             disabled={currentPage === 1} 
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
             className="product-tab-btn"
             style={{ padding: '8px 20px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
           >
@@ -214,7 +235,7 @@ export default function ProductGrid({ searchQuery = '' }) {
           
           <button 
             disabled={currentPage === totalPages} 
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
             className="product-tab-btn"
             style={{ padding: '8px 20px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
           >

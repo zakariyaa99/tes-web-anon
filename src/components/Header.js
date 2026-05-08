@@ -43,7 +43,7 @@ function MobileAccordionItem({ label, items, isOpen, onToggle }) {
   );
 }
 
-export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQuery, onSearchActive }) {
+export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQuery }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
@@ -66,9 +66,8 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
 
   const handleSearchSubmit = useCallback(() => {
     setDropdownOpen(false);
-    if (onSearchActive) onSearchActive();
     scrollToGrid();
-  }, [scrollToGrid, onSearchActive]);
+  }, [scrollToGrid]);
 
   return (
     <>
@@ -123,7 +122,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
                   setDropdownOpen(true);
-                  if (onSearchActive) onSearchActive();
+                  scrollToGrid();
                 }}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
@@ -134,7 +133,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 }}
                 onFocus={() => {
                   setDropdownOpen(true);
-                  if (onSearchActive) onSearchActive();
+                  scrollToGrid();
                 }}
               />
               <button 

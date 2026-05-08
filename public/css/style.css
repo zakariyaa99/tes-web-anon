@@ -1593,7 +1593,7 @@ header {
 }
 
 .product-grid .showcase-title {
-  color: var(--sonic-silver);
+  color: black;
   font-size: var(--fs-8);
   font-weight: var(--weight-300);
   text-transform: capitalize;
@@ -1603,7 +1603,7 @@ header {
 }
 
 .product-grid .showcase-title:hover {
-  color: var(--eerie-black);
+  color: black;
 }
 
 .product-grid .showcase-rating {
