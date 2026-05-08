@@ -288,9 +288,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
                   fontSize: 14,
                   fontWeight: 500,
                   color: 'var(--eerie-black)',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
+                  lineHeight: '1.4',
                 }}>
                   <HighlightText text={product.nama_produk || ''} query={searchQuery} />
                 </div>
@@ -299,32 +297,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
                 </div>
               </div>
 
-              {/* Price */}
-              <div style={{
-                fontSize: 14,
-                fontWeight: 700,
-                color: 'var(--salmon-pink)',
-                flexShrink: 0,
-                whiteSpace: 'nowrap',
-              }}>
-                {formatPrice(product.harga)}
-              </div>
 
-              {/* Stock badge */}
-              {product.stok !== undefined && (
-                <span style={{
-                  fontSize: 11,
-                  padding: '2px 8px',
-                  borderRadius: 4,
-                  background: product.stok > 0 ? '#e8f5e9' : '#ffebee',
-                  color: product.stok > 0 ? '#2e7d32' : '#c62828',
-                  fontWeight: 600,
-                  flexShrink: 0,
-                  whiteSpace: 'nowrap',
-                }}>
-                  {product.stok > 0 ? `Stock: ${product.stok}` : 'Sold Out'}
-                </span>
-              )}
             </button>
           ))}
 

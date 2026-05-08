@@ -642,6 +642,12 @@ header {
   margin: 0;
 }
 
+@media (max-width: 767px) {
+  .header-logo.hidden-on-mobile {
+    display: none;
+  }
+}
+
 .header-search-container {
   -webkit-box-flex: 1;
   -webkit-flex-grow: 1;

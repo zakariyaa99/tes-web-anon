@@ -109,7 +109,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
         {/* HEADER MAIN */}
         <div className="header-main">
           <div className="container">
-            <a href="#" className="header-logo">
+            <a href="#" className={`header-logo${dropdownOpen ? ' hidden-on-mobile' : ''}`}>
               <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="110" height="40" />
             </a>
             <div className="header-search-container" style={{ position: 'relative' }}>
