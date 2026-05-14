@@ -33,7 +33,7 @@ function HighlightText({ text, query }) {
     <>
       {parts.map((part, i) =>
         regex.test(part) ? (
-          <mark key={i} style={{ background: 'var(--salmon-pink)', color: '#fff', borderRadius: 2, padding: '0 2px' }}>{part}</mark>
+          <mark key={i} style={{ background: 'var(--brand-blue)', color: '#fff', borderRadius: 2, padding: '0 2px' }}>{part}</mark>
         ) : (
           <span key={i}>{part}</span>
         )
@@ -42,7 +42,7 @@ function HighlightText({ text, query }) {
   );
 }
 
-export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, onClose }) {
+export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, onClose, onNavigateSearch }) {
   const [suggestions, setSuggestions] = useState([]);
   const [recentSearches, setRecentSearches] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -121,42 +121,54 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
     setSearchQuery(productName);
     saveRecentSearch(productName);
     onClose();
-    // Scroll to grid
-    setTimeout(() => {
-      const grid = document.getElementById('product-grid');
-      if (grid) {
-        const headerOffset = 60;
-        const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-      }
-    }, 100);
-  }, [setSearchQuery, onClose]);
+    if (onNavigateSearch) {
+      onNavigateSearch(productName);
+    } else {
+      // Fallback: scroll to grid on homepage
+      setTimeout(() => {
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+          const headerOffset = 60;
+          const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [setSearchQuery, onClose, onNavigateSearch]);
 
   const handleSearchAll = useCallback(() => {
     if (searchQuery.trim()) {
       saveRecentSearch(searchQuery);
     }
     onClose();
-    const grid = document.getElementById('product-grid');
-    if (grid) {
-      const headerOffset = 60;
-      const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
-      window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
-    }
-  }, [searchQuery, onClose]);
-
-  const handleRecentClick = useCallback((term) => {
-    setSearchQuery(term);
-    onClose();
-    setTimeout(() => {
+    if (onNavigateSearch) {
+      onNavigateSearch(searchQuery);
+    } else {
       const grid = document.getElementById('product-grid');
       if (grid) {
         const headerOffset = 60;
         const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
         window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
       }
-    }, 100);
-  }, [setSearchQuery, onClose]);
+    }
+  }, [searchQuery, onClose, onNavigateSearch]);
+
+  const handleRecentClick = useCallback((term) => {
+    setSearchQuery(term);
+    onClose();
+    if (onNavigateSearch) {
+      onNavigateSearch(term);
+    } else {
+      setTimeout(() => {
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+          const headerOffset = 60;
+          const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [setSearchQuery, onClose, onNavigateSearch]);
 
   const handleClearRecent = useCallback(() => {
     clearRecentSearches();
@@ -195,7 +207,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
             </span>
             <button
               onClick={handleClearRecent}
-              style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--salmon-pink)', cursor: 'pointer', padding: 0 }}
+              style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--brand-blue)', cursor: 'pointer', padding: 0 }}
             >
               Clear All
             </button>
@@ -317,7 +329,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
               cursor: 'pointer',
               fontSize: 14,
               fontWeight: 600,
-              color: 'var(--salmon-pink)',
+              color: 'var(--brand-blue)',
               transition: 'background 0.15s',
             }}
             onMouseEnter={(e) => e.currentTarget.style.background = 'var(--cultured)'}

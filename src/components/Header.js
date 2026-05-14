@@ -1,13 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { createPortal } from 'react-dom';
+import { supabase } from '../lib/supabaseClient';
+import { useAuth } from '../lib/AuthContext';
 import SearchDropdown from './SearchDropdown';
+import { getCart, cartCount, getRemoteCart } from '../lib/cartUtils';
+import { getWishlist, wishlistCount, getRemoteWishlist } from '../lib/wishlistUtils';
 
-const mobileMenuCategories = [
-  {
-    label: 'Categories',
-    items: ['Solvents', 'Reagents', 'Standards', 'Indicators'],
-  },
+const staticMobileMenus = [
   {
     label: 'Brands',
     items: ['Merck', 'Loba Chemie', 'Sigma-Aldrich', 'Spectrochem'],
@@ -35,7 +38,11 @@ function MobileAccordionItem({ label, items, isOpen, onToggle }) {
       <ul className={`submenu-category-list${isOpen ? ' active' : ''}`}>
         {items.map((item) => (
           <li className="submenu-category" key={item}>
-            <a href="#" className="submenu-title">{item}</a>
+            {label === 'Categories' ? (
+              <Link href={`/?tab=${encodeURIComponent(item)}#product-grid`} className="submenu-title" onClick={onToggle}>{item}</Link>
+            ) : (
+              <Link href={`/search?q=${item}`} className="submenu-title" onClick={onToggle}>{item}</Link>
+            )}
           </li>
         ))}
       </ul>
@@ -44,14 +51,141 @@ function MobileAccordionItem({ label, items, isOpen, onToggle }) {
 }
 
 export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQuery }) {
+  const router = useRouter();
+  const { user, signOut, openAuthModal } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [openAccordion, setOpenAccordion] = useState(null);
   const [langOpen, setLangOpen] = useState(false);
   const [currOpen, setCurrOpen] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [dynamicCategories, setDynamicCategories] = useState(['Reagent', 'Standard', 'Consumable', 'Buffer', 'Solvent', 'Kit']);
+  const [isMounted, setIsMounted] = useState(false);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState(0);
+  const [wishlistItemCount, setWishlistItemCount] = useState(0);
+  const accountDropdownRef = useRef(null);
+
+  // Derive display name and initials from the authenticated user
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
+  const displayEmail = user?.email || '';
+  const initials = displayName
+    ? displayName.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+    : '?';
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
+        setAccountDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Load counts — prefer remote when logged in
+  useEffect(() => {
+    setIsMounted(true);
+
+    async function loadCounts() {
+      if (user) {
+        try {
+          const [remoteCart, remoteWl] = await Promise.all([
+            getRemoteCart(user.id),
+            getRemoteWishlist(user.id),
+          ]);
+          setCartItemCount(cartCount(remoteCart));
+          setWishlistItemCount(wishlistCount(remoteWl));
+        } catch {
+          setCartItemCount(cartCount(getCart()));
+          setWishlistItemCount(wishlistCount(getWishlist()));
+        }
+      } else {
+        setCartItemCount(cartCount(getCart()));
+        setWishlistItemCount(wishlistCount(getWishlist()));
+      }
+    }
+    loadCounts();
+
+    // Same-tab local events (for guest updates and post-merge clears)
+    function onCartUpdated(e) { setCartItemCount(cartCount(e.detail.cart)); }
+    function onWishlistUpdated(e) { setWishlistItemCount(wishlistCount(e.detail.wishlist)); }
+    function onStorage(e) {
+      if (e.key === 'anon_cart')     setCartItemCount(cartCount(getCart()));
+      if (e.key === 'anon_wishlist') setWishlistItemCount(wishlistCount(getWishlist()));
+    }
+
+    window.addEventListener('cartUpdated', onCartUpdated);
+    window.addEventListener('wishlistUpdated', onWishlistUpdated);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      window.removeEventListener('cartUpdated', onCartUpdated);
+      window.removeEventListener('wishlistUpdated', onWishlistUpdated);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, [user]);
+
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const cats = new Set();
+        const PAGE_SIZE = 1000;
+        let offset = 0;
+
+        while (true) {
+          const { data, error } = await supabase
+            .from('products')
+            .select('product_type')
+            .range(offset, offset + PAGE_SIZE - 1);
+
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+
+          data.forEach(item => {
+            let rawType = item.product_type || 'Uncategorized';
+            let categoryStr = rawType.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+            cats.add(categoryStr);
+          });
+
+          if (data.length < PAGE_SIZE) break;
+          offset += PAGE_SIZE;
+        }
+
+        setDynamicCategories(Array.from(cats).sort());
+      } catch (err) {
+        console.error("Failed to load categories for header:", err);
+      }
+    }
+    fetchCategories();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('header-categories')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => {
+        fetchCategories();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const mobileMenus = useMemo(() => {
+    const fullCategories = ['All Products', ...dynamicCategories];
+    return [
+      { label: 'Categories', items: fullCategories },
+      ...staticMobileMenus
+    ];
+  }, [dynamicCategories]);
 
   const openMobile = () => setMobileMenuOpen(true);
   const closeMobile = () => setMobileMenuOpen(false);
+
+  const [mobileAccountOpen, setMobileAccountOpen] = useState(false);
+  const openMobileAccount = () => setMobileAccountOpen(true);
+  const closeMobileAccount = () => setMobileAccountOpen(false);
 
   const toggleAccordion = (i) => setOpenAccordion(openAccordion === i ? null : i);
 
@@ -64,16 +198,158 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
     }
   }, []);
 
+  const navigateToSearch = useCallback((q) => {
+    const query = (q || searchQuery || '').trim();
+    if (query) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+    }
+  }, [router, searchQuery]);
+
   const handleSearchSubmit = useCallback(() => {
     setDropdownOpen(false);
-    scrollToGrid();
-  }, [scrollToGrid]);
+    navigateToSearch();
+  }, [navigateToSearch]);
 
   return (
     <>
-      {/* Overlay for mobile menu */}
-      {mobileMenuOpen && (
-        <div className="overlay active" onClick={closeMobile}></div>
+      {/* Overlay and Mobile Menu — portaled to document.body so they sit above ALL stacking contexts */}
+      {isMounted && createPortal(
+        <>
+          {mobileMenuOpen && (
+            <div className="overlay active" onClick={closeMobile} style={{ zIndex: 9998 }}></div>
+          )}
+          {mobileAccountOpen && (
+            <div className="overlay active" onClick={closeMobileAccount} style={{ zIndex: 9998 }}></div>
+          )}
+          <nav className={`mobile-navigation-menu has-scrollbar${mobileAccountOpen ? ' active' : ''}`} style={{ zIndex: 9999 }}>
+            <div className="menu-top">
+              <h2 className="menu-title">{user ? 'Akun Saya' : 'Masuk / Daftar'}</h2>
+              <button className="menu-close-btn" onClick={closeMobileAccount}>
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
+            </div>
+
+            {user ? (
+              <>
+                <div className="mobile-profile-info" style={{ padding: '20px', borderBottom: '1px solid var(--cultured)', display: 'flex', alignItems: 'center', gap: '15px' }}>
+                  <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#E6F1FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '500', color: '#185FA5' }}>{initials}</div>
+                  <div>
+                    <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--eerie-black)' }}>{displayName}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--sonic-silver)' }}>{displayEmail}</div>
+                  </div>
+                </div>
+                <ul className="mobile-menu-category-list">
+                  <li className="menu-category">
+                    <Link href="/account" className="accordion-menu" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none' }}>
+                      <ion-icon name="settings-outline" style={{ fontSize: '20px', color: 'var(--sonic-silver)' }}></ion-icon>
+                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Pengaturan Akun</p>
+                    </Link>
+                  </li>
+                  <li className="menu-category">
+                    <Link href="/wishlist" className="accordion-menu" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none' }}>
+                      <ion-icon name="heart-outline" style={{ fontSize: '20px', color: 'var(--sonic-silver)' }}></ion-icon>
+                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Wishlist</p>
+                      {wishlistItemCount > 0 && (
+                        <span className="dd-badge" style={{ background: '#E6F1FB', color: '#185FA5', padding: '2px 8px', borderRadius: '10px', fontSize: '12px' }}>{wishlistItemCount}</span>
+                      )}
+                    </Link>
+                  </li>
+                  <li className="menu-category">
+                    <Link href="/cart" className="accordion-menu" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none' }}>
+                      <ion-icon name="bag-handle-outline" style={{ fontSize: '20px', color: 'var(--sonic-silver)' }}></ion-icon>
+                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Keranjang</p>
+                      {cartItemCount > 0 && (
+                        <span className="dd-badge" style={{ background: '#E6F1FB', color: '#185FA5', padding: '2px 8px', borderRadius: '10px', fontSize: '12px' }}>{cartItemCount}</span>
+                      )}
+                    </Link>
+                  </li>
+                  <li className="menu-category">
+                    <button
+                      className="accordion-menu"
+                      onClick={async () => { closeMobileAccount(); await signOut(); router.push('/'); }}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: 'none', color: '#A32D2D' }}
+                    >
+                      <ion-icon name="log-out-outline" style={{ fontSize: '20px', color: 'inherit' }}></ion-icon>
+                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Keluar</p>
+                    </button>
+                  </li>
+                </ul>
+              </>
+            ) : (
+              <div style={{ padding: '24px 20px' }}>
+                <p style={{ fontSize: '14px', color: 'var(--sonic-silver)', marginBottom: '16px' }}>Masuk untuk menyimpan keranjang dan wishlist kamu.</p>
+                <button
+                  onClick={() => { closeMobileAccount(); openAuthModal(); }}
+                  style={{ display: 'block', width: '100%', textAlign: 'center', padding: '12px', background: '#185FA5', color: '#fff', borderRadius: '8px', fontWeight: '500', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                >
+                  Masuk / Daftar
+                </button>
+              </div>
+            )}
+          </nav>
+          
+          <nav className={`mobile-navigation-menu has-scrollbar${mobileMenuOpen ? ' active' : ''}`} style={{ zIndex: 9999 }}>
+            <div className="menu-top">
+              <h2 className="menu-title">Menu</h2>
+              <button className="menu-close-btn" onClick={closeMobile}>
+                <ion-icon name="close-outline"></ion-icon>
+              </button>
+            </div>
+
+            <ul className="mobile-menu-category-list">
+              <li className="menu-category">
+                <Link href="/" className="menu-title">Home</Link>
+              </li>
+              {mobileMenus.map((cat, i) => (
+                <MobileAccordionItem
+                  key={cat.label}
+                  label={cat.label}
+                  items={cat.items}
+                  isOpen={openAccordion === i}
+                  onToggle={() => toggleAccordion(i)}
+                />
+              ))}
+            </ul>
+
+            <div className="menu-bottom">
+              <ul className="menu-category-list">
+                <li className="menu-category">
+                  <button className={`accordion-menu${langOpen ? ' active' : ''}`} onClick={() => setLangOpen(!langOpen)}>
+                    <p className="menu-title">Language</p>
+                    <ion-icon name="caret-back-outline" className="caret-back"></ion-icon>
+                  </button>
+                  <ul className={`submenu-category-list${langOpen ? ' active' : ''}`}>
+                    {['English', 'Español', 'French'].map(l => (
+                      <li className="submenu-category" key={l}><a href="#" className="submenu-title">{l}</a></li>
+                    ))}
+                  </ul>
+                </li>
+                <li className="menu-category">
+                  <button className={`accordion-menu${currOpen ? ' active' : ''}`} onClick={() => setCurrOpen(!currOpen)}>
+                    <p className="menu-title">Currency</p>
+                    <ion-icon name="caret-back-outline" className="caret-back"></ion-icon>
+                  </button>
+                  <ul className={`submenu-category-list${currOpen ? ' active' : ''}`}>
+                    {['USD $', 'EUR €'].map(c => (
+                      <li className="submenu-category" key={c}><a href="#" className="submenu-title">{c}</a></li>
+                    ))}
+                  </ul>
+                </li>
+              </ul>
+
+              <ul className="menu-social-container">
+                {['logo-facebook', 'logo-twitter', 'logo-instagram', 'logo-linkedin'].map((icon) => (
+                  <li key={icon}>
+                    <a href="#" className="social-link">
+                      <ion-icon name={icon}></ion-icon>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </nav>
+        </>,
+        document.body
       )}
 
       {/* HEADER TOP - outside sticky header */}
@@ -109,9 +385,9 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
         {/* HEADER MAIN */}
         <div className="header-main">
           <div className="container">
-            <a href="#" className={`header-logo${dropdownOpen ? ' hidden-on-mobile' : ''}`}>
+            <Link href="/" className={`header-logo${dropdownOpen ? ' hidden-on-mobile' : ''}`}>
               <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="110" height="40" />
-            </a>
+            </Link>
             <div className="header-search-container" style={{ position: 'relative' }}>
               <input 
                 type="search" 
@@ -147,38 +423,89 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 setSearchQuery={setSearchQuery}
                 isOpen={dropdownOpen}
                 onClose={() => setDropdownOpen(false)}
+                onNavigateSearch={navigateToSearch}
               />
             </div>
             <div className="header-user-actions">
+              <div className="dropdown-wrap" ref={accountDropdownRef}>
+                {user ? (
+                  <>
+                    <button 
+                      className="action-btn" 
+                      onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                      style={{ background: '#E6F1FB', color: '#185FA5', fontSize: '15px', fontWeight: '600', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
+                    >
+                      {initials}
+                    </button>
+                    <div className={`account-dropdown ${accountDropdownOpen ? 'active' : ''}`}>
+                      <div className="dd-header">
+                        <div className="dd-avatar">{initials}</div>
+                        <div>
+                          <div className="dd-name">{displayName}</div>
+                          <div className="dd-email">{displayEmail}</div>
+                        </div>
+                      </div>
+                      <Link href="/account" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="settings-outline"></ion-icon>
+                        <span className="dd-item-label">Pengaturan Akun</span>
+                      </Link>
+                      <Link href="/wishlist" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="heart-outline"></ion-icon>
+                        <span className="dd-item-label">Wishlist</span>
+                        {wishlistItemCount > 0 && <span className="dd-badge">{wishlistItemCount}</span>}
+                      </Link>
+                      <Link href="/cart" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="bag-handle-outline"></ion-icon>
+                        <span className="dd-item-label">Keranjang</span>
+                        {cartItemCount > 0 && <span className="dd-badge">{cartItemCount}</span>}
+                      </Link>
+                      <div className="dd-sep"></div>
+                      <button
+                        className="dd-item dd-logout"
+                        style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                        onClick={async () => { setAccountDropdownOpen(false); await signOut(); router.push('/'); }}
+                      >
+                        <ion-icon name="log-out-outline"></ion-icon>
+                        <span className="dd-item-label">Keluar</span>
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <button className="action-btn" onClick={openAuthModal}>
+                    <ion-icon name="person-outline"></ion-icon>
+                  </button>
+                )}
+              </div>
               <button className="action-btn">
-                <ion-icon name="person-outline"></ion-icon>
-              </button>
-              <button className="action-btn">
-                <ion-icon name="heart-outline"></ion-icon>
+                <ion-icon name="notifications-outline"></ion-icon>
                 <span className="count">0</span>
               </button>
-              <button className="action-btn">
+              <Link href="/cart" className="action-btn">
                 <ion-icon name="bag-handle-outline"></ion-icon>
-                <span className="count">0</span>
-              </button>
+                {cartItemCount > 0 && (
+                  <span className="count">{cartItemCount > 99 ? '99+' : cartItemCount}</span>
+                )}
+              </Link>
             </div>
           </div>
         </div>
 
         {/* MOBILE BOTTOM NAV */}
         <div className="mobile-bottom-navigation">
-          <button className="action-btn" onClick={openMobile}>
+          <button className="action-btn" onClick={openMobileAccount}>
             <ion-icon name="menu-outline"></ion-icon>
           </button>
-          <button className="action-btn">
+          <Link href="/cart" className="action-btn">
             <ion-icon name="bag-handle-outline"></ion-icon>
-            <span className="count">0</span>
-          </button>
-          <button className="action-btn">
+            {cartItemCount > 0 && (
+              <span className="count">{cartItemCount > 99 ? '99+' : cartItemCount}</span>
+            )}
+          </Link>
+          <Link href="/" className="action-btn">
             <ion-icon name="home-outline"></ion-icon>
-          </button>
+          </Link>
           <button className="action-btn">
-            <ion-icon name="heart-outline"></ion-icon>
+            <ion-icon name="notifications-outline"></ion-icon>
             <span className="count">0</span>
           </button>
           <button className="action-btn" onClick={openMobile}>
@@ -186,68 +513,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
           </button>
         </div>
 
-        {/* MOBILE NAV MENU */}
-        <nav className={`mobile-navigation-menu has-scrollbar${mobileMenuOpen ? ' active' : ''}`}>
-          <div className="menu-top">
-            <h2 className="menu-title">Menu</h2>
-            <button className="menu-close-btn" onClick={closeMobile}>
-              <ion-icon name="close-outline"></ion-icon>
-            </button>
-          </div>
 
-          <ul className="mobile-menu-category-list">
-            <li className="menu-category">
-              <a href="#" className="menu-title">Home</a>
-            </li>
-            {mobileMenuCategories.map((cat, i) => (
-              <MobileAccordionItem
-                key={cat.label}
-                label={cat.label}
-                items={cat.items}
-                isOpen={openAccordion === i}
-                onToggle={() => toggleAccordion(i)}
-              />
-            ))}
-
-          </ul>
-
-          <div className="menu-bottom">
-            <ul className="menu-category-list">
-              <li className="menu-category">
-                <button className={`accordion-menu${langOpen ? ' active' : ''}`} onClick={() => setLangOpen(!langOpen)}>
-                  <p className="menu-title">Language</p>
-                  <ion-icon name="caret-back-outline" className="caret-back"></ion-icon>
-                </button>
-                <ul className={`submenu-category-list${langOpen ? ' active' : ''}`}>
-                  {['English', 'Español', 'French'].map(l => (
-                    <li className="submenu-category" key={l}><a href="#" className="submenu-title">{l}</a></li>
-                  ))}
-                </ul>
-              </li>
-              <li className="menu-category">
-                <button className={`accordion-menu${currOpen ? ' active' : ''}`} onClick={() => setCurrOpen(!currOpen)}>
-                  <p className="menu-title">Currency</p>
-                  <ion-icon name="caret-back-outline" className="caret-back"></ion-icon>
-                </button>
-                <ul className={`submenu-category-list${currOpen ? ' active' : ''}`}>
-                  {['USD $', 'EUR €'].map(c => (
-                    <li className="submenu-category" key={c}><a href="#" className="submenu-title">{c}</a></li>
-                  ))}
-                </ul>
-              </li>
-            </ul>
-
-            <ul className="menu-social-container">
-              {['logo-facebook', 'logo-twitter', 'logo-instagram', 'logo-linkedin'].map((icon) => (
-                <li key={icon}>
-                  <a href="#" className="social-link">
-                    <ion-icon name={icon}></ion-icon>
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
 
       </header>
 
@@ -257,49 +523,21 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
           <ul className="desktop-menu-category-list">
             {/*this is menu home*/}
             <li className="menu-category">
-              <a href="#" className="menu-title">Home</a>
+              <Link href="/" className="menu-title">Home</Link>
             </li>
             {/*this is menu categories*/}
             <li className="menu-category">
               <a href="#" className="menu-title">Categories</a>
-              <div className="dropdown-panel">
-                <ul className="dropdown-panel-list">
-                  <li className="menu-title"><a href="#">Solvents</a></li>
-                  {['Acids', 'Alkalis', 'Salts', 'Indicators', 'Buffer Solutions'].map(i => (
-                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                  <li className="panel-list-item">
-                    <a href="#"><img src="/images/electronics-banner-1.jpg" alt="headphone collection" width="250" height="119" /></a>
+              <ul className="dropdown-list">
+                <li className="dropdown-item" key="All Products">
+                  <Link href="/?tab=All%20Products#product-grid">All Products</Link>
+                </li>
+                {dynamicCategories.map(i => (
+                  <li className="dropdown-item" key={i}>
+                    <Link href={`/?tab=${encodeURIComponent(i)}#product-grid`}>{i}</Link>
                   </li>
-                </ul>
-                <ul className="dropdown-panel-list">
-                  <li className="menu-title"><a href="#">Reagents</a></li>
-                  {['General Purpose Reagents', 'Analytical Reagents', 'Chromatography Reagents', 'Spectroscopy Reagents', 'Biotechnology Reagents'].map(i => (
-                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                  <li className="panel-list-item">
-                    <a href="#"><img src="/images/mens-banner.jpg" alt="men's fashion" width="250" height="119" /></a>
-                  </li>
-                </ul>
-                <ul className="dropdown-panel-list">
-                  <li className="menu-title"><a href="#">Standards</a></li>
-                  {['AAS Standards', 'ICP Standards', 'UV-Vis Standards', 'HPLC Standards', 'GC Standards'].map(i => (
-                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                  <li className="panel-list-item">
-                    <a href="#"><img src="/images/womens-banner.jpg" alt="women's fashion" width="250" height="119" /></a>
-                  </li>
-                </ul>
-                <ul className="dropdown-panel-list">
-                  <li className="menu-title"><a href="#">Indicators</a></li>
-                  {['Acid-Base Indicators', 'Redox Indicators', 'Complexometric Indicators', 'Fluorescent Indicators', 'Other Indicators'].map(i => (
-                    <li className="panel-list-item" key={i}><a href="#">{i}</a></li>
-                  ))}
-                  <li className="panel-list-item">
-                    <a href="#"><img src="/images/electronics-banner-2.jpg" alt="mouse collection" width="250" height="119" /></a>
-                  </li>
-                </ul>
-              </div>
+                ))}
+              </ul>
             </li>
             {/*this is menu Brands*/}
             <li className="menu-category">

@@ -1,0 +1,321 @@
+/* ─── Wishlist Page ─── */
+
+.wl-page {
+  padding: 24px 0 80px;
+  min-height: 70vh;
+  background: var(--white);
+}
+
+/* ─── Nav row: title + back button ─── */
+.wl-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.wl-page-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--eerie-black);
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.wl-page-title ion-icon {
+  font-size: 22px;
+  color: hsl(340, 65%, 55%);
+}
+
+.wl-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.wl-cart-link {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--sonic-silver);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  text-decoration: none;
+}
+.wl-cart-link:hover {
+  color: var(--eerie-black);
+  background: var(--cultured);
+}
+
+.wl-back-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--sonic-silver);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.wl-back-btn:hover {
+  color: var(--eerie-black);
+  background: var(--cultured);
+}
+
+/* ─── Item count ─── */
+.wl-count {
+  font-size: 13px;
+  color: var(--sonic-silver);
+  margin-bottom: 16px;
+}
+
+/* ─── Product grid ─── */
+.wl-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 480px) {
+  .wl-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .wl-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wl-grid {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* ─── Wishlist card ─── */
+.wl-card {
+  background: var(--white);
+  border: 1px solid hsla(216, 98%, 52%, 0.15);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.wl-card:hover {
+  border-color: var(--salmon-pink);
+  box-shadow: 0 4px 16px hsla(216, 98%, 52%, 0.12);
+}
+
+/* Remove button */
+.wl-remove-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--white);
+  border: 1px solid var(--cultured);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  color: var(--sonic-silver);
+  z-index: 2;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+  box-shadow: 0 1px 4px hsla(0,0%,0%,0.08);
+}
+
+.wl-remove-btn:hover {
+  color: #c62828;
+  background: #ffebee;
+  border-color: #ef9a9a;
+}
+
+/* Image */
+.wl-card-img {
+  width: 100%;
+  aspect-ratio: 1;
+  background: hsla(216, 98%, 52%, 0.04);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.wl-card-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s ease;
+}
+
+.wl-card:hover .wl-card-img img {
+  transform: scale(1.05);
+}
+
+/* Info */
+.wl-card-info {
+  padding: 10px 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.wl-card-category {
+  font-size: 10px;
+  color: var(--salmon-pink);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wl-card-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--eerie-black);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.wl-card-meta {
+  font-size: 10px;
+  color: var(--sonic-silver);
+}
+
+.wl-card-price {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--salmon-pink);
+  margin-top: 4px;
+}
+
+/* Add to cart button */
+.wl-card-footer {
+  padding: 0 12px 12px;
+  display: flex;
+  gap: 8px;
+}
+
+.wl-add-cart-btn {
+  flex: 1;
+  padding: 8px 10px;
+  background: var(--salmon-pink);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: filter 0.2s;
+  text-decoration: none;
+}
+
+.wl-add-cart-btn:hover {
+  filter: brightness(1.1);
+}
+
+.wl-add-cart-btn ion-icon {
+  font-size: 14px;
+}
+
+.wl-view-btn {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white);
+  border: 1.5px solid hsla(216, 98%, 52%, 0.25);
+  border-radius: var(--border-radius-sm);
+  color: var(--salmon-pink);
+  font-size: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+
+.wl-view-btn:hover {
+  background: hsla(216, 98%, 52%, 0.08);
+  border-color: var(--salmon-pink);
+}
+
+/* ─── Empty state ─── */
+.wl-empty {
+  min-height: 55vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  color: var(--sonic-silver);
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.wl-empty-icon {
+  font-size: 68px;
+  color: hsl(340, 65%, 85%);
+}
+
+.wl-empty h2 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--eerie-black);
+}
+
+.wl-empty p {
+  font-size: 13px;
+  max-width: 280px;
+  line-height: 1.6;
+}
+
+.wl-empty-btn {
+  margin-top: 6px;
+  padding: 11px 28px;
+  background: var(--salmon-pink);
+  color: var(--white);
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  transition: filter 0.2s;
+}
+
+.wl-empty-btn:hover {
+  filter: brightness(1.1);
+}

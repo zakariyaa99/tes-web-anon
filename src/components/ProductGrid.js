@@ -1,11 +1,17 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
+import '../app/search/search.css';
 
 
 
 export default function ProductGrid({ searchQuery = '' }) {
+  const searchParams = useSearchParams();
+  const urlTab = searchParams ? searchParams.get('tab') : null;
+
   const [activeTab, setActiveTab] = useState('All Products');
   const [currentPage, setCurrentPage] = useState(1);
   const [productsData, setProductsData] = useState({ 'All Products': [] });
@@ -42,16 +48,43 @@ export default function ProductGrid({ searchQuery = '' }) {
   };
   const [loading, setLoading] = useState(true);
 
+  // Sync active tab with URL parameter
+  useEffect(() => {
+    if (urlTab) {
+      setActiveTab(urlTab);
+      setTimeout(() => {
+        const grid = document.getElementById('product-grid');
+        if (grid) {
+          const headerOffset = 60;
+          const offsetPosition = grid.getBoundingClientRect().top + window.pageYOffset - headerOffset;
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [urlTab]);
+
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const { data, error } = await supabase.from('products').select('*');
-        
-        if (error) {
-          throw error;
+        const PAGE_SIZE = 1000;
+        let offset = 0;
+        let allRows = [];
+
+        while (true) {
+          const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .range(offset, offset + PAGE_SIZE - 1);
+
+          if (error) throw error;
+          if (!data || data.length === 0) break;
+
+          allRows = allRows.concat(data);
+          if (data.length < PAGE_SIZE) break;
+          offset += PAGE_SIZE;
         }
 
-        const productsArray = Array.isArray(data) ? data : [];
+        const productsArray = allRows;
 
         // Map the fetched Supabase data to match the component's expected structure
         const formattedProducts = productsArray.map(item => {
@@ -60,10 +93,10 @@ export default function ProductGrid({ searchQuery = '' }) {
           const priceStr = item.harga ? `Rp ${item.harga.toLocaleString()}` : 'Rp 0';
 
           let rawType = item.product_type || 'Uncategorized';
-          let oneWordType = rawType.split(' ')[0];
-          let categoryStr = oneWordType.charAt(0).toUpperCase() + oneWordType.slice(1).toLowerCase();
+          let categoryStr = rawType.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
           return {
+            id: item.id,
             img1: '/images/products/labkimiaproduk.png',
             img2: '/images/products/labkimiaproduk.png',
             alt: item.nama_produk || 'Product Image',
@@ -77,12 +110,10 @@ export default function ProductGrid({ searchQuery = '' }) {
           };
         });
 
+        const cats = Array.from(new Set(formattedProducts.map(p => p.category))).sort();
         const newProductsData = { 'All Products': formattedProducts };
-        formattedProducts.forEach(p => {
-          if (!newProductsData[p.category]) {
-            newProductsData[p.category] = [];
-          }
-          newProductsData[p.category].push(p);
+        cats.forEach(cat => {
+          newProductsData[cat] = formattedProducts.filter(p => p.category === cat);
         });
 
         setProductsData(newProductsData);
@@ -189,57 +220,82 @@ export default function ProductGrid({ searchQuery = '' }) {
 
       {/* Added minHeight to prevent the page from shrinking abruptly on the last page, 
           which would prevent the browser from being able to scroll to the top of the grid */}
-      <div className="product-grid" style={{ minHeight: '800px' }}>
+      <div className="sr-product-grid" style={{ minHeight: '800px' }}>
         {currentProducts.map((p, i) => (
-          <div className="showcase" key={i}>
-            <div className="showcase-banner">
-              <img src={p.img1} alt={p.alt} width="300" className="product-img default" />
-              <img src={p.img2} alt={p.alt} width="300" className="product-img hover" />
-              {p.badge && <p className={`showcase-badge${p.badgeClass ? ' ' + p.badgeClass : ''}`}>{p.badge}</p>}
-              <div className="showcase-actions">
-                <button className="btn-action"><ion-icon name="heart-outline"></ion-icon></button>
-                <button className="btn-action"><ion-icon name="bag-add-outline"></ion-icon></button>
-              </div>
+          <Link href={`/product/${p.id}`} className="sr-product-card" key={i} style={{ textDecoration: 'none' }}>
+            <div className="sr-product-img">
+              <img src={p.img1} alt={p.alt} width={300} height={300} />
+              {p.badge && (
+                <span className="sr-badge sr-badge-soldout">Habis</span>
+              )}
             </div>
-            <div className="showcase-content">
-              <a href="#" className="showcase-category">{p.category}</a>
-              <h3><a href="#" className="showcase-title">{p.title}</a></h3>
-              <div className="showcase-rating">
-                {p.stars.map((filled, si) => (
-                  <ion-icon key={si} name={filled ? 'star' : 'star-outline'}></ion-icon>
-                ))}
-              </div>
-              <div className="price-box">
-                <p className="price">{p.price}</p>
-                <del>{p.oldPrice}</del>
-              </div>
+            <div className="sr-product-info">
+              <span className="sr-product-category">{p.category}</span>
+              <h3 className="sr-product-name">{p.title}</h3>
+              <div className="sr-product-price">{p.price}</div>
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginTop: '40px', gap: '15px' }}>
-          <button 
-            disabled={currentPage === 1} 
-            onClick={() => handlePageChange(Math.max(currentPage - 1, 1))}
-            className="product-tab-btn"
-            style={{ padding: '8px 20px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', opacity: currentPage === 1 ? 0.5 : 1 }}
+        <div className="sr-pagination">
+          {/* Prev */}
+          <button
+            className="sr-page-btn"
+            disabled={currentPage === 1}
+            onClick={() => handlePageChange(currentPage - 1)}
+            aria-label="Previous page"
           >
-            Previous
+            ‹
           </button>
-          
-          <span style={{ fontSize: '16px', fontWeight: '500', color: 'var(--sonic-silver)' }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          
-          <button 
-            disabled={currentPage === totalPages} 
-            onClick={() => handlePageChange(Math.min(currentPage + 1, totalPages))}
-            className="product-tab-btn"
-            style={{ padding: '8px 20px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', opacity: currentPage === totalPages ? 0.5 : 1 }}
+
+          {/* Windowed page numbers */}
+          {(() => {
+            const SIBLINGS = 2; // pages shown on each side of current
+            const items = [];
+            const addPage = (p) => items.push({ type: 'page', value: p });
+            const addEllipsis = (key) => items.push({ type: 'ellipsis', key });
+
+            if (totalPages <= 2 * SIBLINGS + 5) {
+              // Few enough pages — show them all
+              for (let p = 1; p <= totalPages; p++) addPage(p);
+            } else {
+              const left  = Math.max(2, currentPage - SIBLINGS);
+              const right = Math.min(totalPages - 1, currentPage + SIBLINGS);
+
+              addPage(1);
+              if (left > 2) addEllipsis('left');
+              for (let p = left; p <= right; p++) addPage(p);
+              if (right < totalPages - 1) addEllipsis('right');
+              addPage(totalPages);
+            }
+
+            return items.map((item) =>
+              item.type === 'ellipsis' ? (
+                <span key={item.key} className="sr-page-ellipsis">…</span>
+              ) : (
+                <button
+                  key={item.value}
+                  className={`sr-page-btn${currentPage === item.value ? ' active' : ''}`}
+                  onClick={() => handlePageChange(item.value)}
+                  aria-label={`Page ${item.value}`}
+                  aria-current={currentPage === item.value ? 'page' : undefined}
+                >
+                  {item.value}
+                </button>
+              )
+            );
+          })()}
+
+          {/* Next */}
+          <button
+            className="sr-page-btn"
+            disabled={currentPage === totalPages}
+            onClick={() => handlePageChange(currentPage + 1)}
+            aria-label="Next page"
           >
-            Next
+            ›
           </button>
         </div>
       )}

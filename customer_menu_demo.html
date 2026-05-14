@@ -1,0 +1,284 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:14px}
+.demo-label{font-size:11px;font-weight:500;color:var(--color-text-tertiary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.section{margin-bottom:2rem}
+
+/* HEADER */
+.header{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:0 20px;height:54px;display:flex;align-items:center;justify-content:space-between}
+.header-logo{font-size:16px;font-weight:500;color:var(--color-text-primary)}
+.header-search{flex:1;max-width:320px;margin:0 20px;height:34px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:var(--color-background-secondary);display:flex;align-items:center;padding:0 10px;gap:6px;color:var(--color-text-tertiary);font-size:13px}
+.header-actions{display:flex;align-items:center;gap:4px}
+.hbtn{width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);font-size:20px;position:relative;border:none;background:none}
+.hbtn:hover{background:var(--color-background-secondary)}
+.hbtn.active{background:var(--color-background-secondary)}
+.badge{position:absolute;top:4px;right:4px;width:16px;height:16px;background:#E24B4A;border-radius:50%;font-size:10px;font-weight:500;color:#fff;display:flex;align-items:center;justify-content:center}
+.avatar-btn{width:32px;height:32px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:500;color:#185FA5;cursor:pointer;border:0.5px solid #B5D4F4;margin-left:4px}
+
+/* DROPDOWN */
+.dropdown-wrap{position:relative;display:inline-block}
+.dropdown{background:var(--color-background-primary);border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-lg);width:240px;overflow:hidden;margin-top:8px}
+.dd-header{padding:14px 16px;border-bottom:0.5px solid var(--color-border-tertiary);display:flex;align-items:center;gap:10px}
+.dd-avatar{width:36px;height:36px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#185FA5;flex-shrink:0}
+.dd-name{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.dd-email{font-size:11px;color:var(--color-text-tertiary);margin-top:1px}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 16px;cursor:pointer;color:var(--color-text-primary);font-size:13px;border:none;background:none;width:100%;text-align:left}
+.dd-item:hover{background:var(--color-background-secondary)}
+.dd-item i{font-size:17px;color:var(--color-text-secondary);width:20px}
+.dd-item-label{flex:1}
+.dd-badge{background:#E6F1FB;color:#185FA5;border-radius:10px;font-size:11px;font-weight:500;padding:1px 7px}
+.dd-badge.warn{background:#FAECE7;color:#993C1D}
+.dd-sep{height:0.5px;background:var(--color-border-tertiary);margin:4px 0}
+.dd-logout{color:var(--color-text-danger,#A32D2D)}
+.dd-logout i{color:var(--color-text-danger,#A32D2D)}
+
+/* MOBILE DEVICE */
+.device-wrap{display:flex;gap:20px;align-items:flex-start}
+.device{width:240px;flex-shrink:0;border:0.5px solid var(--color-border-secondary);border-radius:20px;overflow:hidden;background:var(--color-background-primary)}
+.device-bar{height:6px;background:var(--color-background-secondary)}
+.mob-header{height:48px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:0.5px solid var(--color-border-tertiary)}
+.mob-logo{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.mob-hbtns{display:flex;gap:2px}
+.mob-hbtn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:var(--border-radius-md);cursor:pointer;color:var(--color-text-secondary);font-size:18px;position:relative}
+.mob-content{min-height:340px;background:var(--color-background-tertiary)}
+
+/* MOBILE ACCOUNT PAGE */
+.mob-page{display:none;flex-direction:column}
+.mob-page.active{display:flex}
+.mob-profile-header{background:var(--color-background-primary);padding:16px 14px;display:flex;align-items:center;gap:10px;border-bottom:0.5px solid var(--color-border-tertiary)}
+.mob-avatar{width:42px;height:42px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:500;color:#185FA5;flex-shrink:0}
+.mob-name{font-size:14px;font-weight:500;color:var(--color-text-primary)}
+.mob-email{font-size:11px;color:var(--color-text-tertiary);margin-top:1px}
+
+.order-status-strip{background:var(--color-background-primary);margin:8px 0 0;padding:12px 14px}
+.oss-title{font-size:11px;color:var(--color-text-secondary);margin-bottom:10px;font-weight:500}
+.oss-row{display:flex;justify-content:space-around}
+.oss-item{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer}
+.oss-icon{width:32px;height:32px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--color-text-secondary);position:relative}
+.oss-label{font-size:10px;color:var(--color-text-secondary);text-align:center}
+.oss-dot{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:#E24B4A;border-radius:50%;font-size:9px;font-weight:500;color:#fff;display:flex;align-items:center;justify-content:center}
+
+.mob-menu-group{background:var(--color-background-primary);margin-top:8px}
+.mob-menu-item{display:flex;align-items:center;gap:10px;padding:11px 14px;border-bottom:0.5px solid var(--color-border-tertiary);cursor:pointer;color:var(--color-text-primary)}
+.mob-menu-item:last-child{border-bottom:none}
+.mob-menu-item i{font-size:18px;color:var(--color-text-secondary);width:22px}
+.mob-menu-label{flex:1;font-size:13px}
+.mob-menu-badge{background:#E6F1FB;color:#185FA5;border-radius:10px;font-size:10px;font-weight:500;padding:1px 6px}
+.mob-menu-badge.warn{background:#FAECE7;color:#993C1D}
+.mob-chevron{font-size:14px;color:var(--color-text-tertiary)}
+.mob-logout-item{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;color:#A32D2D}
+.mob-logout-item i{font-size:18px;width:22px}
+
+/* BOTTOM NAV */
+.bottom-nav{display:flex;border-top:0.5px solid var(--color-border-tertiary);background:var(--color-background-primary)}
+.bn-item{flex:1;display:flex;flex-direction:column;align-items:center;padding:8px 0 6px;cursor:pointer;color:var(--color-text-tertiary);font-size:9px;gap:3px;position:relative}
+.bn-item.active{color:#378ADD}
+.bn-item i{font-size:20px}
+.bn-dot{position:absolute;top:6px;right:calc(50% - 16px);width:14px;height:14px;background:#E24B4A;border-radius:50%;font-size:9px;font-weight:500;color:#fff;display:flex;align-items:center;justify-content:center}
+
+/* TAB SWITCHER */
+.tab-row{display:flex;gap:8px;margin-bottom:14px}
+.tab{padding:5px 14px;border:0.5px solid var(--color-border-secondary);border-radius:20px;font-size:12px;cursor:pointer;color:var(--color-text-secondary);background:var(--color-background-primary)}
+.tab.active{background:#378ADD;border-color:#378ADD;color:#fff}
+
+.desc-card{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:12px 14px;font-size:12px;color:var(--color-text-secondary);line-height:1.6;flex:1}
+.desc-card b{color:var(--color-text-primary);font-weight:500}
+</style>
+
+<div style="padding:1rem 0">
+<h2 class="sr-only">Demo interaktif menu customer — desktop dropdown dan mobile account page</h2>
+
+<div class="section">
+  <div class="demo-label">Desktop — header dengan dropdown</div>
+  <div class="tab-row">
+    <button class="tab active" onclick="setDesktopTab('closed',this)">Menu tertutup</button>
+    <button class="tab" onclick="setDesktopTab('open',this)">Menu terbuka</button>
+  </div>
+
+  <div class="header">
+    <div class="header-logo">TokoKu</div>
+    <div class="header-search">
+      <i class="ti ti-search" aria-hidden="true" style="font-size:14px"></i>
+      Cari produk...
+    </div>
+    <div class="header-actions">
+      <button class="hbtn" aria-label="Notifikasi">
+        <i class="ti ti-bell" aria-hidden="true"></i>
+        <span class="badge">3</span>
+      </button>
+      <button class="hbtn" aria-label="Wishlist">
+        <i class="ti ti-heart" aria-hidden="true"></i>
+        <span class="badge">5</span>
+      </button>
+      <button class="hbtn" aria-label="Keranjang">
+        <i class="ti ti-shopping-cart" aria-hidden="true"></i>
+        <span class="badge">2</span>
+      </button>
+      <div class="avatar-btn" onclick="toggleDropdown()" id="avatarBtn">AR</div>
+    </div>
+  </div>
+
+  <div style="display:flex;justify-content:flex-end;margin-top:4px">
+    <div id="ddWrap" style="display:none">
+      <div class="dropdown">
+        <div class="dd-header">
+          <div class="dd-avatar">AR</div>
+          <div>
+            <div class="dd-name">Andi Ramadhan</div>
+            <div class="dd-email">andi@email.com</div>
+          </div>
+        </div>
+        <div class="dd-item"><i class="ti ti-user" aria-hidden="true"></i><span class="dd-item-label">Profil saya</span></div>
+        <div class="dd-item"><i class="ti ti-package" aria-hidden="true"></i><span class="dd-item-label">Pembelian saya</span>
+          <span class="dd-badge warn">2 diproses</span>
+        </div>
+        <div class="dd-item"><i class="ti ti-heart" aria-hidden="true"></i><span class="dd-item-label">Wishlist</span><span class="dd-badge">5</span></div>
+        <div class="dd-item"><i class="ti ti-ticket" aria-hidden="true"></i><span class="dd-item-label">Voucher saya</span><span class="dd-badge">3</span></div>
+        <div class="dd-item"><i class="ti ti-bell" aria-hidden="true"></i><span class="dd-item-label">Notifikasi</span><span class="dd-badge warn">3</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item"><i class="ti ti-map-pin" aria-hidden="true"></i><span class="dd-item-label">Alamat tersimpan</span></div>
+        <div class="dd-item"><i class="ti ti-settings" aria-hidden="true"></i><span class="dd-item-label">Pengaturan akun</span></div>
+        <div class="dd-sep"></div>
+        <div class="dd-item dd-logout"><i class="ti ti-logout" aria-hidden="true"></i><span class="dd-item-label">Keluar</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <div class="demo-label">Mobile — halaman akun & bottom navigation</div>
+  <div class="tab-row">
+    <button class="tab active" onclick="setMobTab('home',this)">Halaman lain</button>
+    <button class="tab" onclick="setMobTab('account',this)">Halaman akun</button>
+  </div>
+
+  <div class="device-wrap">
+    <div class="device">
+      <div class="device-bar"></div>
+      <div class="mob-header">
+        <div class="mob-logo">TokoKu</div>
+        <div class="mob-hbtns">
+          <div class="mob-hbtn" aria-label="Notifikasi"><i class="ti ti-bell" aria-hidden="true"></i><span class="badge" style="top:2px;right:2px">3</span></div>
+          <div class="mob-hbtn" aria-label="Keranjang"><i class="ti ti-shopping-cart" aria-hidden="true"></i><span class="badge" style="top:2px;right:2px">2</span></div>
+        </div>
+      </div>
+
+      <div class="mob-content">
+        <div class="mob-page" id="mob-home" style="display:flex">
+          <div style="padding:14px;display:flex;flex-direction:column;gap:8px">
+            <div style="height:80px;background:var(--color-background-secondary);border-radius:var(--border-radius-md);display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--color-text-tertiary)">Banner promo</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <div style="height:100px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)"></div>
+              <div style="height:100px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)"></div>
+              <div style="height:100px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)"></div>
+              <div style="height:100px;background:var(--color-background-secondary);border-radius:var(--border-radius-md)"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="mob-page" id="mob-account">
+          <div class="mob-profile-header">
+            <div class="mob-avatar">AR</div>
+            <div>
+              <div class="mob-name">Andi Ramadhan</div>
+              <div class="mob-email">andi@email.com</div>
+            </div>
+          </div>
+
+          <div class="order-status-strip">
+            <div class="oss-title">Pembelian saya</div>
+            <div class="oss-row">
+              <div class="oss-item">
+                <div class="oss-icon"><i class="ti ti-clock" aria-hidden="true"></i><span class="oss-dot">2</span></div>
+                <div class="oss-label">Menunggu<br>bayar</div>
+              </div>
+              <div class="oss-item">
+                <div class="oss-icon"><i class="ti ti-package" aria-hidden="true"></i></div>
+                <div class="oss-label">Dikemas</div>
+              </div>
+              <div class="oss-item">
+                <div class="oss-icon"><i class="ti ti-truck" aria-hidden="true"></i><span class="oss-dot">1</span></div>
+                <div class="oss-label">Dikirim</div>
+              </div>
+              <div class="oss-item">
+                <div class="oss-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+                <div class="oss-label">Selesai</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mob-menu-group" style="margin-top:8px">
+            <div class="mob-menu-item"><i class="ti ti-user" aria-hidden="true"></i><span class="mob-menu-label">Profil saya</span><i class="ti ti-chevron-right mob-chevron" aria-hidden="true"></i></div>
+            <div class="mob-menu-item"><i class="ti ti-heart" aria-hidden="true"></i><span class="mob-menu-label">Wishlist</span><span class="mob-menu-badge">5</span><i class="ti ti-chevron-right mob-chevron" aria-hidden="true"></i></div>
+            <div class="mob-menu-item"><i class="ti ti-ticket" aria-hidden="true"></i><span class="mob-menu-label">Voucher saya</span><span class="mob-menu-badge">3</span><i class="ti ti-chevron-right mob-chevron" aria-hidden="true"></i></div>
+            <div class="mob-menu-item"><i class="ti ti-map-pin" aria-hidden="true"></i><span class="mob-menu-label">Alamat tersimpan</span><i class="ti ti-chevron-right mob-chevron" aria-hidden="true"></i></div>
+          </div>
+
+          <div class="mob-menu-group" style="margin-top:8px">
+            <div class="mob-menu-item"><i class="ti ti-settings" aria-hidden="true"></i><span class="mob-menu-label">Pengaturan akun</span><i class="ti ti-chevron-right mob-chevron" aria-hidden="true"></i></div>
+            <div class="mob-logout-item"><i class="ti ti-logout" aria-hidden="true"></i><span style="font-size:13px">Keluar</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-nav">
+        <div class="bn-item" id="bn-home" onclick="setBnTab('home')"><i class="ti ti-home" aria-hidden="true"></i><span>Beranda</span></div>
+        <div class="bn-item" onclick="setBnTab('search')"><i class="ti ti-search" aria-hidden="true"></i><span>Cari</span></div>
+        <div class="bn-item" onclick="setBnTab('cart')"><i class="ti ti-shopping-cart" aria-hidden="true"></i><span>Keranjang</span><span class="bn-dot">2</span></div>
+        <div class="bn-item" onclick="setBnTab('wish')"><i class="ti ti-heart" aria-hidden="true"></i><span>Wishlist</span></div>
+        <div class="bn-item" id="bn-account" onclick="setBnTab('account')"><i class="ti ti-user" aria-hidden="true"></i><span>Akun</span></div>
+      </div>
+    </div>
+
+    <div class="desc-card">
+      <div id="descText">
+        <b>Halaman lain (home, search, dll)</b><br><br>
+        Header tetap tampil dengan logo, notifikasi, dan keranjang.<br><br>
+        Wishlist & Akun diakses via <b>bottom navigation</b> di bawah — bukan dari header, karena layar mobile terbatas.<br><br>
+        Tap tab <b>"Halaman akun"</b> di atas untuk lihat tampilan menu akun.
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+function toggleDropdown(){
+  const w=document.getElementById('ddWrap');
+  w.style.display=w.style.display==='none'?'block':'none';
+}
+function setDesktopTab(mode,el){
+  document.querySelectorAll('.tab-row').forEach((r,i)=>{if(i===0)r.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'))});
+  el.classList.add('active');
+  document.getElementById('ddWrap').style.display=mode==='open'?'block':'none';
+}
+function setMobTab(tab,el){
+  document.querySelectorAll('.tab-row')[1].querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  if(tab==='account'){
+    showMobPage('account');
+    setActiveBn('bn-account');
+    document.getElementById('descText').innerHTML='<b>Halaman akun</b><br><br>Profil user langsung terlihat di atas.<br><br>Status pesanan dengan badge notifikasi tampil sebagai <b>shortcut cepat</b> — user bisa langsung tahu ada pesanan yang perlu diproses.<br><br>Menu lainnya (wishlist, voucher, alamat) tersusun di bawahnya sebagai list.<br><br><b>Bottom nav</b> tetap terlihat di semua halaman.';
+  } else {
+    showMobPage('home');
+    setActiveBn('bn-home');
+    document.getElementById('descText').innerHTML='<b>Halaman lain (home, search, dll)</b><br><br>Header tetap tampil dengan logo, notifikasi, dan keranjang.<br><br>Wishlist & Akun diakses via <b>bottom navigation</b> di bawah — bukan dari header, karena layar mobile terbatas.<br><br>Tap tab <b>"Halaman akun"</b> di atas untuk lihat tampilan menu akun.';
+  }
+}
+function showMobPage(name){
+  document.querySelectorAll('.mob-page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('mob-'+name).classList.add('active');
+}
+function setActiveBn(id){
+  document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+function setBnTab(tab){
+  if(tab==='account'){
+    setMobTab('account', document.querySelectorAll('.tab-row')[1].querySelectorAll('.tab')[1]);
+  } else {
+    setMobTab('home', document.querySelectorAll('.tab-row')[1].querySelectorAll('.tab')[0]);
+  }
+}
+</script>

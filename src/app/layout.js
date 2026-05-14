@@ -1,4 +1,5 @@
 import Script from 'next/script';
+import { AuthProvider } from '../lib/AuthContext';
 
 export const metadata = {
   title: 'Anon - eCommerce Website',
@@ -20,7 +21,9 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
         <Script
           type="module"
           src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"

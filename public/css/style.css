@@ -223,7 +223,7 @@ body::-webkit-scrollbar-thumb:hover {
   background: hsla(0, 0%, 0%, 0.5);
   opacity: 0;
   pointer-events: none;
-  z-index: 15;
+  z-index: 200;
   transition: 0.5s ease;
 }
 
@@ -231,6 +231,23 @@ body::-webkit-scrollbar-thumb:hover {
   opacity: 1;
   pointer-events: all;
 }
+
+/* When the main mobile nav or search filter sidebar is open, push everything else below the overlay */
+@media (max-width: 767px) {
+  body.sidebar-open header,
+  body.sidebar-open .header-top,
+  body.sidebar-open .mobile-bottom-navigation,
+  body.sidebar-open .product-tabs-bar,
+  body.sidebar-open .sr-toolbar,
+  body.nav-open header,
+  body.nav-open .header-top,
+  body.nav-open .mobile-bottom-navigation,
+  body.nav-open .product-tabs-bar,
+  body.nav-open .sr-toolbar {
+    z-index: 1 !important;
+  }
+}
+
 
 
 
@@ -608,7 +625,7 @@ header {
   overscroll-behavior: contain;
   visibility: hidden;
   transition: 0.5s ease;
-  z-index: 20;
+  z-index: 300;
 }
 
 .mobile-navigation-menu.active {
@@ -2615,7 +2632,7 @@ footer {
     gap: 30px;
   }
 
-  .desktop-menu-category-list .menu-category:not(:nth-child(2)) {
+  .desktop-menu-category-list .menu-category {
     position: relative;
   }
 
@@ -2715,14 +2732,14 @@ footer {
   .dropdown-list {
     position: absolute;
     top: 100%;
-    left: 0;
+    left: 50%;
     width: 200px;
     background: var(--white);
     padding: 20px 0;
     border-radius: var(--border-radius-md);
     border: 1px solid var(--cultured);
     box-shadow: 0 3px 5px hsla(0, 0%, 0%, 0.1);
-    transform: translateY(50px);
+    transform: translate(-50%, 50px);
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -2731,7 +2748,7 @@ footer {
   }
 
   .desktop-menu-category-list .menu-category:hover>.dropdown-list {
-    transform: translateY(0);
+    transform: translate(-50%, 0);
     opacity: 1;
     visibility: visible;
     pointer-events: all;
