@@ -109,7 +109,7 @@
 /* ─── Wishlist card ─── */
 .wl-card {
   background: var(--white);
-  border: 1px solid hsla(216, 98%, 52%, 0.15);
+  border: 1px solid rgba(24, 95, 165, 0.15);
   border-radius: var(--border-radius-md);
   overflow: hidden;
   display: flex;
@@ -119,8 +119,8 @@
 }
 
 .wl-card:hover {
-  border-color: var(--salmon-pink);
-  box-shadow: 0 4px 16px hsla(216, 98%, 52%, 0.12);
+  border-color: var(--brand-blue);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
 }
 
 /* Remove button */
@@ -154,7 +154,7 @@
 .wl-card-img {
   width: 100%;
   aspect-ratio: 1;
-  background: hsla(216, 98%, 52%, 0.04);
+  background: rgba(24, 95, 165, 0.04);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -183,7 +183,7 @@
 
 .wl-card-category {
   font-size: 10px;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -208,7 +208,7 @@
 .wl-card-price {
   font-size: 13px;
   font-weight: 700;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   margin-top: 4px;
 }
 
@@ -222,10 +222,10 @@
 .wl-add-cart-btn {
   flex: 1;
   padding: 8px 10px;
-  background: var(--salmon-pink);
+  background: var(--brand-blue);
   color: var(--white);
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-btn);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -234,12 +234,15 @@
   align-items: center;
   justify-content: center;
   gap: 5px;
-  transition: filter 0.2s;
+  transition: all 0.2s;
   text-decoration: none;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.15);
 }
 
 .wl-add-cart-btn:hover {
   filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 95, 165, 0.25);
 }
 
 .wl-add-cart-btn ion-icon {
@@ -253,9 +256,9 @@
   align-items: center;
   justify-content: center;
   background: var(--white);
-  border: 1.5px solid hsla(216, 98%, 52%, 0.25);
+  border: 1.5px solid rgba(24, 95, 165, 0.25);
   border-radius: var(--border-radius-sm);
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   font-size: 16px;
   cursor: pointer;
   text-decoration: none;
@@ -264,8 +267,8 @@
 }
 
 .wl-view-btn:hover {
-  background: hsla(216, 98%, 52%, 0.08);
-  border-color: var(--salmon-pink);
+  background: rgba(24, 95, 165, 0.08);
+  border-color: var(--brand-blue);
 }
 
 /* ─── Empty state ─── */
@@ -301,10 +304,10 @@
 .wl-empty-btn {
   margin-top: 6px;
   padding: 11px 28px;
-  background: var(--salmon-pink);
+  background: var(--brand-blue);
   color: var(--white);
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-btn);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -313,9 +316,12 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  transition: filter 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.15);
 }
 
 .wl-empty-btn:hover {
   filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 95, 165, 0.25);
 }

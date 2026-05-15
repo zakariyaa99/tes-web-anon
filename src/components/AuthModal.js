@@ -10,6 +10,7 @@ export default function AuthModal({ onClose }) {
   const [tab, setTab]       = useState('login'); // 'login' | 'register'
   const [email, setEmail]   = useState('');
   const [password, setPassword]   = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName]     = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError]   = useState('');
@@ -172,15 +173,25 @@ export default function AuthModal({ onClose }) {
           {/* Password */}
           <div className="auth-field">
             <label htmlFor="auth-password">Password</label>
-            <input
-              id="auth-password"
-              type="password"
-              placeholder={tab === 'register' ? 'Min. 6 karakter' : '••••••••'}
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              className={fieldErrors.password ? 'error' : ''}
-              autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
-            />
+            <div className="auth-password-wrapper">
+              <input
+                id="auth-password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder={tab === 'register' ? 'Min. 6 karakter' : '••••••••'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className={fieldErrors.password ? 'error' : ''}
+                autoComplete={tab === 'login' ? 'current-password' : 'new-password'}
+              />
+              <button
+                type="button"
+                className="auth-password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+              >
+                <ion-icon name={showPassword ? 'eye-off-outline' : 'eye-outline'}></ion-icon>
+              </button>
+            </div>
             {fieldErrors.password && <span className="auth-field-error">{fieldErrors.password}</span>}
           </div>
 

@@ -33,7 +33,8 @@
 }
 
 .sr-search-input:focus {
-  border-color: var(--salmon-pink);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
 }
 
 .sr-search-btn {
@@ -42,20 +43,23 @@
   gap: 6px;
   padding: 0 18px;
   height: 42px;
-  background: var(--salmon-pink);
+  background: var(--brand-blue);
   color: var(--white);
   border: none;
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-btn);
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   font-family: inherit;
   white-space: nowrap;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.15);
 }
 
 .sr-search-btn:hover {
   filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 95, 165, 0.25);
 }
 
 /* ─── Result meta ─── */
@@ -84,18 +88,18 @@
   align-items: center;
   gap: 5px;
   padding: 4px 12px;
-  background: hsla(216, 98%, 52%, 0.1);
-  border: 1px solid hsla(216, 98%, 52%, 0.25);
+  background: rgba(24, 95, 165, 0.1);
+  border: 1px solid rgba(24, 95, 165, 0.25);
   border-radius: 20px;
   font-size: 12px;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   font-weight: 500;
 }
 
 .sr-filter-tag button {
   background: none;
   border: none;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   cursor: pointer;
   font-size: 15px;
   line-height: 1;
@@ -247,7 +251,7 @@
   width: 16px;
   height: 16px;
   cursor: pointer;
-  accent-color: var(--salmon-pink);
+  accent-color: var(--brand-blue);
 }
 
 .sr-price-inputs {
@@ -270,7 +274,8 @@
 }
 
 .sr-price-input:focus {
-  border-color: var(--salmon-pink);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(24, 95, 165, 0.1);
 }
 
 .sr-price-sep {
@@ -322,8 +327,8 @@
   }
 
   .sr-filter-toggle-btn:hover {
-    border-color: var(--salmon-pink);
-    color: var(--salmon-pink);
+    border-color: var(--brand-blue);
+    color: var(--brand-blue);
   }
 }
 
@@ -346,14 +351,14 @@
 }
 
 .sr-sort-tab:hover {
-  border-color: var(--salmon-pink);
-  color: var(--salmon-pink);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
 }
 
 .sr-sort-tab.active {
-  background: hsla(216, 98%, 52%, 0.1);
-  border-color: var(--salmon-pink);
-  color: var(--salmon-pink);
+  background: rgba(24, 95, 165, 0.1);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
   font-weight: 500;
 }
 
@@ -378,14 +383,14 @@
 }
 
 .sr-view-btn:hover {
-  border-color: var(--salmon-pink);
-  color: var(--salmon-pink);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
 }
 
 .sr-view-btn.active {
-  background: hsla(216, 98%, 52%, 0.1);
-  border-color: var(--salmon-pink);
-  color: var(--salmon-pink);
+  background: rgba(24, 95, 165, 0.1);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
 }
 
 /* ─── Loading ─── */
@@ -400,7 +405,7 @@
   height: 36px;
   margin: 0 auto 12px;
   border: 3px solid var(--cultured);
-  border-top-color: var(--salmon-pink);
+  border-top-color: var(--brand-blue);
   border-radius: 50%;
   animation: sr-spin 0.7s linear infinite;
 }
@@ -450,7 +455,7 @@
 
 .sr-product-card:hover {
   border-color: var(--sonic-silver);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06);
 }
 
 .sr-product-card.list-view {
@@ -503,7 +508,7 @@
   display: block;
   font-size: 11px;
   font-weight: 500;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   text-transform: uppercase;
   letter-spacing: 0.03em;
   margin-bottom: 4px;
@@ -558,8 +563,8 @@
 
 /* ─── Highlight ─── */
 .sr-highlight {
-  background: hsla(216, 98%, 52%, 0.15);
-  color: var(--salmon-pink);
+  background: rgba(24, 95, 165, 0.15);
+  color: var(--brand-blue);
   padding: 0 2px;
   border-radius: 2px;
   font-weight: 500;
@@ -594,14 +599,14 @@
 
 
 .sr-page-btn:hover:not(:disabled) {
-  border-color: var(--salmon-pink);
-  color: var(--salmon-pink);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue);
 }
 
 /* Prevent mobile browser's default blue flash on tap */
 .sr-page-btn:active:not(:disabled) {
-  background: var(--salmon-pink) !important;
-  border-color: var(--salmon-pink) !important;
+  background: var(--brand-blue) !important;
+  border-color: var(--brand-blue) !important;
   color: var(--white) !important;
   transform: scale(0.95);
 }
@@ -612,14 +617,14 @@
 }
 
 .sr-page-btn:focus-visible {
-  outline: 2px solid var(--salmon-pink);
+  outline: 2px solid var(--brand-blue);
   outline-offset: 2px;
 }
 
 
 .sr-page-btn.active {
-  background: var(--salmon-pink) !important;
-  border-color: var(--salmon-pink) !important;
+  background: var(--brand-blue) !important;
+  border-color: var(--brand-blue) !important;
   color: var(--white) !important;
   font-weight: 500;
 }

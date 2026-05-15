@@ -16,25 +16,23 @@
 }
 
 .pd-back-btn {
-  width: 36px;
-  height: 36px;
-  display: inline-flex;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--sonic-silver);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--salmon-pink);
-  background: hsla(216, 98%, 52%, 0.07);
-  border: 1.5px solid hsla(216, 98%, 52%, 0.25);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  font-family: inherit;
-  font-size: 18px;
+  padding: 8px;
+  border-radius: 8px;
   flex-shrink: 0;
-  transition: background 0.2s, border-color 0.2s;
 }
 
 .pd-back-btn:hover {
-  background: hsla(216, 98%, 52%, 0.14);
-  border-color: var(--salmon-pink);
+  color: var(--eerie-black);
+  background: var(--cultured);
 }
 
 /* ─── Breadcrumb ─── */
@@ -151,7 +149,7 @@
 }
 
 .pd-thumb.active {
-  border-color: var(--salmon-pink);
+  border-color: var(--brand-blue);
 }
 
 .pd-thumb img {
@@ -164,7 +162,7 @@
 .pd-buy-panel {
   background: var(--white);
   border: 1px solid var(--cultured);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-lg);
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -210,16 +208,16 @@
 }
 
 .pd-price-box {
-  background: hsla(216, 98%, 52%, 0.06);
+  background: rgba(24, 95, 165, 0.06);
   border-radius: var(--border-radius-sm);
   padding: 12px 14px;
-  border: 1px solid hsla(216, 98%, 52%, 0.15);
+  border: 1px solid rgba(24, 95, 165, 0.15);
 }
 
 .pd-price-main {
   font-size: 24px;
   font-weight: 600;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
 }
 
 .pd-disc-badge {
@@ -306,17 +304,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: hsla(216, 98%, 52%, 0.08);
+  background: rgba(24, 95, 165, 0.08);
   border: none;
   cursor: pointer;
   font-size: 18px;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   transition: background 0.2s;
   font-family: inherit;
 }
 
 .pd-qty-btn:hover {
-  background: hsla(216, 98%, 52%, 0.16);
+  background: rgba(24, 95, 165, 0.16);
 }
 
 .pd-qty-val {
@@ -351,19 +349,22 @@
   flex: 1;
   min-width: 120px;
   padding: 11px 12px;
-  background: var(--salmon-pink);
+  background: var(--brand-blue);
   color: var(--white);
   border: none;
-  border-radius: var(--border-radius-sm);
+  border-radius: var(--border-radius-btn);
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
-  transition: filter 0.2s;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.15);
 }
 
 .pd-btn-buy:hover {
   filter: brightness(1.1);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(24, 95, 165, 0.25);
 }
 
 .pd-btn-cart {
@@ -371,8 +372,8 @@
   min-width: 120px;
   padding: 11px 12px;
   background: var(--white);
-  color: var(--salmon-pink);
-  border: 1.5px solid var(--salmon-pink);
+  color: var(--brand-blue);
+  border: 1.5px solid var(--brand-blue);
   border-radius: var(--border-radius-sm);
   font-size: 14px;
   font-weight: 600;
@@ -386,7 +387,7 @@
 }
 
 .pd-btn-cart:hover {
-  background: hsla(216, 98%, 52%, 0.07);
+  background: rgba(24, 95, 165, 0.07);
 }
 
 .pd-btn-wish {
@@ -437,7 +438,7 @@
 .pd-ship-box {
   background: var(--white);
   border: 1px solid var(--cultured);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-lg);
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -501,7 +502,7 @@
 .pd-section-card {
   background: var(--white);
   border: 1px solid var(--cultured);
-  border-radius: var(--border-radius-md);
+  border-radius: var(--border-radius-lg);
   padding: 16px;
   margin-bottom: 16px;
 }
@@ -623,7 +624,7 @@
 .pd-rev-bar-track {
   flex: 1;
   height: 6px;
-  background: hsla(216, 98%, 52%, 0.1);
+  background: rgba(24, 95, 165, 0.1);
   border-radius: 3px;
   overflow: hidden;
 }
@@ -715,7 +716,7 @@
 
 .pd-rec-card {
   background: var(--white);
-  border: 1px solid hsla(216, 98%, 52%, 0.15);
+  border: 1px solid rgba(24, 95, 165, 0.15);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   cursor: pointer;
@@ -725,8 +726,8 @@
 }
 
 .pd-rec-card:hover {
-  border-color: var(--salmon-pink);
-  box-shadow: 0 2px 10px hsla(216, 98%, 52%, 0.15);
+  border-color: var(--brand-blue);
+  box-shadow: 0 2px 10px rgba(24, 95, 165, 0.15);
 }
 
 .pd-rec-img {
@@ -767,7 +768,7 @@
 
 .pd-rec-category {
   font-size: 10px;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
   font-weight: 500;
   text-transform: uppercase;
   letter-spacing: 0.03em;
@@ -777,7 +778,7 @@
 .pd-rec-price {
   font-size: 12px;
   font-weight: 600;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
 }
 
 /* ─── Loading skeleton ─── */
@@ -794,8 +795,8 @@
 .pd-spinner {
   width: 36px;
   height: 36px;
-  border: 3px solid hsla(216, 98%, 52%, 0.15);
-  border-top-color: var(--salmon-pink);
+  border: 3px solid rgba(24, 95, 165, 0.15);
+  border-top-color: var(--brand-blue);
   border-radius: 50%;
   animation: pd-spin 0.7s linear infinite;
 }
@@ -828,7 +829,7 @@
 
 .pd-not-found a {
   padding: 10px 22px;
-  background: var(--salmon-pink);
+  background: var(--brand-blue);
   color: var(--white);
   border-radius: var(--border-radius-sm);
   font-size: 14px;
@@ -939,8 +940,8 @@
   width: 72px;
   height: 72px;
   flex-shrink: 0;
-  background: hsla(216, 98%, 52%, 0.05);
-  border: 1px solid hsla(216, 98%, 52%, 0.12);
+  background: rgba(24, 95, 165, 0.05);
+  border: 1px solid rgba(24, 95, 165, 0.12);
   border-radius: var(--border-radius-sm);
   overflow: hidden;
   display: flex;
@@ -993,7 +994,7 @@
 .pd-cm-price {
   font-size: 14px;
   font-weight: 600;
-  color: var(--salmon-pink);
+  color: var(--brand-blue);
 }
 
 /* Subtotal */
@@ -1002,8 +1003,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 18px;
-  background: hsla(216, 98%, 52%, 0.05);
-  border-bottom: 1px solid hsla(216, 98%, 52%, 0.1);
+  background: rgba(24, 95, 165, 0.05);
+  border-bottom: 1px solid rgba(24, 95, 165, 0.1);
   font-size: 13px;
   color: var(--sonic-silver);
 }
@@ -1043,7 +1044,7 @@
 .pd-cm-btn-view {
   flex: 1;
   padding: 10px 12px;
-  background: var(--salmon-pink);
+  background: var(--brand-blue);
   color: var(--white);
   border: none;
   border-radius: var(--border-radius-sm);

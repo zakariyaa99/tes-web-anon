@@ -63,6 +63,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
   const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
   const [cartItemCount, setCartItemCount] = useState(0);
   const [wishlistItemCount, setWishlistItemCount] = useState(0);
+  const [pendingOrderCount, setPendingOrderCount] = useState(0);
   const accountDropdownRef = useRef(null);
 
   // Derive display name and initials from the authenticated user
@@ -101,6 +102,14 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
           setCartItemCount(cartCount(getCart()));
           setWishlistItemCount(wishlistCount(getWishlist()));
         }
+        try {
+          const { count } = await supabase
+            .from('orders')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', user.id)
+            .eq('status', 'pending');
+          setPendingOrderCount(count || 0);
+        } catch { /* ignore */ }
       } else {
         setCartItemCount(cartCount(getCart()));
         setWishlistItemCount(wishlistCount(getWishlist()));
@@ -231,49 +240,80 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
 
             {user ? (
               <>
-                <div className="mobile-profile-info" style={{ padding: '20px', borderBottom: '1px solid var(--cultured)', display: 'flex', alignItems: 'center', gap: '15px' }}>
-                  <div style={{ width: '50px', height: '50px', borderRadius: '50%', background: '#E6F1FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', fontWeight: '500', color: '#185FA5' }}>{initials}</div>
-                  <div>
-                    <div style={{ fontSize: '16px', fontWeight: '500', color: 'var(--eerie-black)' }}>{displayName}</div>
-                    <div style={{ fontSize: '13px', color: 'var(--sonic-silver)' }}>{displayEmail}</div>
+                {/* Profile header */}
+                <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--cultured)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <div style={{ width: '46px', height: '46px', borderRadius: '50%', background: '#E6F1FB', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px', fontWeight: '600', color: '#185FA5', flexShrink: 0 }}>{initials}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: '15px', fontWeight: '600', color: 'var(--eerie-black)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayName}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--sonic-silver)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{displayEmail}</div>
                   </div>
                 </div>
-                <ul className="mobile-menu-category-list">
-                  <li className="menu-category">
-                    <Link href="/account" className="accordion-menu" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none' }}>
-                      <ion-icon name="settings-outline" style={{ fontSize: '20px', color: 'var(--sonic-silver)' }}></ion-icon>
-                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Pengaturan Akun</p>
-                    </Link>
-                  </li>
-                  <li className="menu-category">
-                    <Link href="/wishlist" className="accordion-menu" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none' }}>
-                      <ion-icon name="heart-outline" style={{ fontSize: '20px', color: 'var(--sonic-silver)' }}></ion-icon>
-                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Wishlist</p>
-                      {wishlistItemCount > 0 && (
-                        <span className="dd-badge" style={{ background: '#E6F1FB', color: '#185FA5', padding: '2px 8px', borderRadius: '10px', fontSize: '12px' }}>{wishlistItemCount}</span>
-                      )}
-                    </Link>
-                  </li>
-                  <li className="menu-category">
-                    <Link href="/cart" className="accordion-menu" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none' }}>
-                      <ion-icon name="bag-handle-outline" style={{ fontSize: '20px', color: 'var(--sonic-silver)' }}></ion-icon>
-                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Keranjang</p>
-                      {cartItemCount > 0 && (
-                        <span className="dd-badge" style={{ background: '#E6F1FB', color: '#185FA5', padding: '2px 8px', borderRadius: '10px', fontSize: '12px' }}>{cartItemCount}</span>
-                      )}
-                    </Link>
-                  </li>
-                  <li className="menu-category">
-                    <button
-                      className="accordion-menu"
-                      onClick={async () => { closeMobileAccount(); await signOut(); router.push('/'); }}
-                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '15px 20px', borderBottom: 'none', color: '#A32D2D' }}
+
+                {/* Order status strip */}
+                <div style={{ background: '#f7f9fc', padding: '14px 20px', borderBottom: '1px solid var(--cultured)' }}>
+                  <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sonic-silver)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Pembelian Saya</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+                    {[
+                      { icon: 'time-outline',        label: 'Menunggu\nBayar',  count: pendingOrderCount, status: 'pending'    },
+                      { icon: 'cube-outline',         label: 'Dikemas',           count: 0,                 status: 'processing' },
+                      { icon: 'car-outline',          label: 'Dikirim',           count: 0,                 status: 'shipped'    },
+                      { icon: 'checkmark-outline',    label: 'Selesai',           count: 0,                 status: 'delivered'  },
+                    ].map(({ icon, label, count, status }) => (
+                      <Link
+                        key={status}
+                        href={`/orders?filter=${status}`}
+                        onClick={closeMobileAccount}
+                        style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', textDecoration: 'none' }}
+                      >
+                        <div style={{ position: 'relative', width: '40px', height: '40px', background: '#fff', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', color: 'var(--sonic-silver)', border: '1px solid var(--cultured)' }}>
+                          <ion-icon name={icon}></ion-icon>
+                          {count > 0 && (
+                            <span style={{ position: 'absolute', top: '-5px', right: '-5px', width: '16px', height: '16px', background: '#E24B4A', borderRadius: '50%', fontSize: '10px', fontWeight: '600', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{count}</span>
+                          )}
+                        </div>
+                        <span style={{ fontSize: '10px', color: 'var(--sonic-silver)', textAlign: 'center', whiteSpace: 'pre-line', lineHeight: 1.3 }}>{label}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Menu group 1 */}
+                <div style={{ borderBottom: '1px solid var(--cultured)' }}>
+                  {[
+                    { href: '/account',  icon: 'person-outline',        label: 'Profil Saya'      },
+                    { href: '/wishlist', icon: 'heart-outline',          label: 'Wishlist',        badge: wishlistItemCount },
+                    { href: '/account',  icon: 'ticket-outline',         label: 'Voucher Saya'    },
+                    { href: '/account',  icon: 'location-outline',       label: 'Alamat Tersimpan' },
+                  ].map(({ href, icon, label, badge }) => (
+                    <Link
+                      key={label}
+                      href={href}
+                      onClick={closeMobileAccount}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none', fontSize: '14px' }}
                     >
-                      <ion-icon name="log-out-outline" style={{ fontSize: '20px', color: 'inherit' }}></ion-icon>
-                      <p className="menu-title" style={{ padding: 0, border: 'none', flex: 1, textAlign: 'left', fontWeight: '400', color: 'inherit' }}>Keluar</p>
-                    </button>
-                  </li>
-                </ul>
+                      <ion-icon name={icon} style={{ fontSize: '19px', color: 'var(--sonic-silver)', width: '20px', flexShrink: 0 }}></ion-icon>
+                      <span style={{ flex: 1 }}>{label}</span>
+                      {badge > 0 && <span style={{ background: '#E6F1FB', color: '#185FA5', padding: '1px 8px', borderRadius: '10px', fontSize: '11px', fontWeight: '600' }}>{badge}</span>}
+                      <ion-icon name="chevron-forward-outline" style={{ fontSize: '14px', color: 'var(--sonic-silver)' }}></ion-icon>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Menu group 2 */}
+                <div>
+                  <Link href="/account" onClick={closeMobileAccount} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 20px', borderBottom: '1px solid var(--cultured)', color: 'var(--eerie-black)', textDecoration: 'none', fontSize: '14px' }}>
+                    <ion-icon name="settings-outline" style={{ fontSize: '19px', color: 'var(--sonic-silver)', width: '20px', flexShrink: 0 }}></ion-icon>
+                    <span style={{ flex: 1 }}>Pengaturan Akun</span>
+                    <ion-icon name="chevron-forward-outline" style={{ fontSize: '14px', color: 'var(--sonic-silver)' }}></ion-icon>
+                  </Link>
+                  <button
+                    onClick={async () => { closeMobileAccount(); await signOut(); router.push('/'); }}
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 20px', color: '#A32D2D', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px' }}
+                  >
+                    <ion-icon name="log-out-outline" style={{ fontSize: '19px', width: '20px', flexShrink: 0 }}></ion-icon>
+                    <span>Keluar</span>
+                  </button>
+                </div>
               </>
             ) : (
               <div style={{ padding: '24px 20px' }}>
@@ -437,7 +477,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                     >
                       {initials}
                     </button>
-                    <div className={`account-dropdown ${accountDropdownOpen ? 'active' : ''}`}>
+                    <div className={`account-dropdown ${accountDropdownOpen ? 'active' : ''}`} style={{ width: '260px' }}>
                       <div className="dd-header">
                         <div className="dd-avatar">{initials}</div>
                         <div>
@@ -445,21 +485,57 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                           <div className="dd-email">{displayEmail}</div>
                         </div>
                       </div>
+
+                      {/* Profil Saya */}
                       <Link href="/account" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
-                        <ion-icon name="settings-outline"></ion-icon>
-                        <span className="dd-item-label">Pengaturan Akun</span>
+                        <ion-icon name="person-outline"></ion-icon>
+                        <span className="dd-item-label">Profil Saya</span>
                       </Link>
+
+                      {/* Pembelian Saya */}
+                      <Link href="/orders" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="cube-outline"></ion-icon>
+                        <span className="dd-item-label">Pembelian Saya</span>
+                        {pendingOrderCount > 0 && (
+                          <span className="dd-badge" style={{ background: '#FAECE7', color: '#993C1D' }}>{pendingOrderCount} pending</span>
+                        )}
+                      </Link>
+
+                      {/* Wishlist */}
                       <Link href="/wishlist" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
                         <ion-icon name="heart-outline"></ion-icon>
                         <span className="dd-item-label">Wishlist</span>
                         {wishlistItemCount > 0 && <span className="dd-badge">{wishlistItemCount}</span>}
                       </Link>
-                      <Link href="/cart" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
-                        <ion-icon name="bag-handle-outline"></ion-icon>
-                        <span className="dd-item-label">Keranjang</span>
-                        {cartItemCount > 0 && <span className="dd-badge">{cartItemCount}</span>}
+
+                      {/* Voucher */}
+                      <Link href="/account" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="ticket-outline"></ion-icon>
+                        <span className="dd-item-label">Voucher Saya</span>
                       </Link>
+
+                      {/* Notifikasi */}
+                      <a href="#" className="dd-item" onClick={e => { e.preventDefault(); setAccountDropdownOpen(false); }}>
+                        <ion-icon name="notifications-outline"></ion-icon>
+                        <span className="dd-item-label">Notifikasi</span>
+                      </a>
+
                       <div className="dd-sep"></div>
+
+                      {/* Alamat */}
+                      <Link href="/account" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="location-outline"></ion-icon>
+                        <span className="dd-item-label">Alamat Tersimpan</span>
+                      </Link>
+
+                      {/* Pengaturan */}
+                      <Link href="/account" className="dd-item" onClick={() => setAccountDropdownOpen(false)}>
+                        <ion-icon name="settings-outline"></ion-icon>
+                        <span className="dd-item-label">Pengaturan Akun</span>
+                      </Link>
+
+                      <div className="dd-sep"></div>
+
                       <button
                         className="dd-item dd-logout"
                         style={{ width: '100%', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}

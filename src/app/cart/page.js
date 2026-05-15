@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '../../components/Header';
 import Footer from '../../components/Footer';
 import { useAuth } from '../../lib/AuthContext';
+import { supabase } from '../../lib/supabaseClient';
 import {
   getCart,
   updateQty,
@@ -24,7 +25,7 @@ function formatPrice(n) {
 }
 
 export default function CartPage() {
-  const { user } = useAuth();
+  const { user, openAuthModal } = useAuth();
   const [cart, setCart]       = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [mounted, setMounted] = useState(false);
@@ -220,7 +221,16 @@ export default function CartPage() {
                   </div>
                 </div>
 
-                <button className="cart-checkout-btn">
+                <button
+                  className="cart-checkout-btn"
+                  onClick={() => {
+                    if (user) {
+                      router.push('/checkout');
+                    } else {
+                      openAuthModal();
+                    }
+                  }}
+                >
                   <ion-icon name="card-outline" aria-hidden="true"></ion-icon>
                   Bayar Sekarang
                 </button>

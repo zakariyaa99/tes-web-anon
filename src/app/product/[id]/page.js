@@ -231,7 +231,22 @@ function ProductDetailContent({ id }) {
                   className="pd-btn-buy"
                   disabled={isSoldOut}
                   style={isSoldOut ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                  onClick={() => showToast('Lanjut ke checkout...')}
+                  onClick={async () => {
+                    if (isSoldOut) return;
+                    const cartItem = {
+                      id: product.id,
+                      name: product.nama_produk,
+                      price: price,
+                      packSize: [product.pack_size, product.unit].filter(Boolean).join(' '),
+                      image: '/images/products/labkimiaproduk.png',
+                    };
+                    if (user) {
+                      try { await addToCartRemote(user.id, cartItem, qty); } catch(e) { console.error(e); }
+                    } else {
+                      addToCart(cartItem, qty);
+                    }
+                    router.push('/checkout');
+                  }}
                 >
                   Beli sekarang
                 </button>
