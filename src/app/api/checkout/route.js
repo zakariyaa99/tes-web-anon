@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import { supabaseAdmin } from '../../../lib/supabaseAdmin';
+import { getSupabaseAdmin } from '../../../lib/supabaseAdmin';
 
 const IS_PRODUCTION = process.env.MIDTRANS_IS_PRODUCTION === 'true';
 const MIDTRANS_BASE_URL = IS_PRODUCTION
@@ -46,17 +46,19 @@ export async function POST(request) {
     const midtransOrderId = `ORDER-${Date.now()}-${user.id.slice(0, 8)}`;
 
     // ── 4. Create order in Supabase (status: pending) ───────────────────────
-    const { data: order, error: orderErr } = await supabaseAdmin
+    const db = getSupabaseAdmin();
+
+    const { data: order, error: orderErr } = await db
       .from('orders')
       .insert({
-        user_id:          user.id,
-        status:           'pending',
-        total_amount:     totalAmount,
-        shipping_name:    shipping.name,
-        shipping_phone:   shipping.phone,
-        shipping_address: shipping.address,
-        shipping_city:    shipping.city,
-        shipping_postal:  shipping.postal || '',
+        user_id:           user.id,
+        status:            'pending',
+        total_amount:      totalAmount,
+        shipping_name:     shipping.name,
+        shipping_phone:    shipping.phone,
+        shipping_address:  shipping.address,
+        shipping_city:     shipping.city,
+        shipping_postal:   shipping.postal || '',
         midtrans_order_id: midtransOrderId,
       })
       .select()
@@ -74,7 +76,7 @@ export async function POST(request) {
       image:      item.image || '',
     }));
 
-    const { error: itemsErr } = await supabaseAdmin
+    const { error: itemsErr } = await db
       .from('order_items')
       .insert(orderItems);
 
@@ -94,11 +96,11 @@ export async function POST(request) {
         phone:      shipping.phone,
         email:      user.email,
         shipping_address: {
-          first_name:  shipping.name,
-          phone:       shipping.phone,
-          address:     shipping.address,
-          city:        shipping.city,
-          postal_code: shipping.postal || '',
+          first_name:   shipping.name,
+          phone:        shipping.phone,
+          address:      shipping.address,
+          city:         shipping.city,
+          postal_code:  shipping.postal || '',
           country_code: 'IDN',
         },
       },
@@ -106,11 +108,8 @@ export async function POST(request) {
         id:       String(item.id),
         price:    Math.round(item.price),
         quantity: item.qty,
-        name:     item.name.substring(0, 50), // Midtrans has 50-char limit
+        name:     item.name.substring(0, 50),
       })),
-      callbacks: {
-        finish: `${process.env.NEXT_PUBLIC_SITE_URL || ''}/orders?success=1`,
-      },
     };
 
     const snapRes = await fetch(MIDTRANS_BASE_URL, {
@@ -129,8 +128,8 @@ export async function POST(request) {
 
     const { token: snapToken } = await snapRes.json();
 
-    // ── 7. Save snap_token to order for reference ────────────────────────────
-    await supabaseAdmin
+    // ── 7. Save snap_token to order for reference ───────────────────────────
+    await db
       .from('orders')
       .update({ snap_token: snapToken })
       .eq('id', order.id);
