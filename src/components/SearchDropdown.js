@@ -203,13 +203,13 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
         <div style={{ padding: '12px 16px 8px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
             <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--sonic-silver)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-              Recent Searches
+              Pencarian Terakhir
             </span>
             <button
               onClick={handleClearRecent}
               style={{ background: 'none', border: 'none', fontSize: 12, color: 'var(--brand-blue)', cursor: 'pointer', padding: 0 }}
             >
-              Clear All
+              Hapus Semua
             </button>
           </div>
           {recentSearches.map((term, i) => (
@@ -244,7 +244,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
       {/* Loading */}
       {searchQuery.trim() && loading && (
         <div style={{ padding: '20px 16px', textAlign: 'center', color: 'var(--sonic-silver)', fontSize: 14 }}>
-          Searching...
+          Mencari...
         </div>
       )}
 
@@ -252,7 +252,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
       {showSuggestions && (
         <div style={{ padding: '8px 0' }}>
           <div style={{ padding: '4px 16px 8px', fontSize: 12, fontWeight: 600, color: 'var(--sonic-silver)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            Products
+            Produk
           </div>
           {suggestions.map((product) => (
             <button
@@ -305,7 +305,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
                   <HighlightText text={product.nama_produk || ''} query={searchQuery} />
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--sonic-silver)', marginTop: 2 }}>
-                  {product.product_type || 'Uncategorized'}
+                  {product.product_type || 'Tanpa Kategori'}
                 </div>
               </div>
 
@@ -335,7 +335,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
             onMouseEnter={(e) => e.currentTarget.style.background = 'var(--cultured)'}
             onMouseLeave={(e) => e.currentTarget.style.background = 'none'}
           >
-            See all results for &quot;{searchQuery}&quot;
+            Lihat semua hasil untuk &quot;{searchQuery}&quot;
             <ion-icon name="arrow-forward-outline" style={{ fontSize: 16 }}></ion-icon>
           </button>
         </div>
@@ -345,7 +345,7 @@ export default function SearchDropdown({ searchQuery, setSearchQuery, isOpen, on
       {showNoResults && (
         <div style={{ padding: '24px 16px', textAlign: 'center' }}>
           <div style={{ fontSize: 14, color: 'var(--sonic-silver)', marginBottom: 4 }}>
-            No products found for
+            Tidak ada produk ditemukan untuk
           </div>
           <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--eerie-black)' }}>
             &quot;{searchQuery}&quot;

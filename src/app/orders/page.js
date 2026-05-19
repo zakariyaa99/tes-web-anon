@@ -243,7 +243,6 @@ function OrdersContent() {
 
         </div>
       </main>
-
       <Footer />
     </>
   );

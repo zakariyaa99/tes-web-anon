@@ -22,8 +22,6 @@ export function AuthProvider({ children }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         const currentUser = session?.user ?? null;
-        setUser(currentUser);
-        setLoading(false);
 
         if (event === 'SIGNED_IN' && currentUser) {
           // Lazy-import to avoid circular deps at module load time
@@ -31,7 +29,14 @@ export function AuthProvider({ children }) {
           const { mergeGuestWishlistOnLogin } = await import('./wishlistUtils');
           await mergeGuestCartOnLogin(currentUser.id);
           await mergeGuestWishlistOnLogin(currentUser.id);
+          
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent('cartMerged'));
+          }
         }
+
+        setUser(currentUser);
+        setLoading(false);
       }
     );
 

@@ -2,12 +2,12 @@ import Script from 'next/script';
 import { AuthProvider } from '../lib/AuthContext';
 
 export const metadata = {
-  title: 'Anon - eCommerce Website',
+  title: 'labkimiaJKT',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="id">
       <head>
         <meta charSet="UTF-8" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />

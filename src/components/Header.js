@@ -12,16 +12,16 @@ import { getWishlist, wishlistCount, getRemoteWishlist } from '../lib/wishlistUt
 
 const staticMobileMenus = [
   {
-    label: 'Brands',
+    label: 'Merek',
     items: ['Merck', 'Loba Chemie', 'Sigma-Aldrich', 'Spectrochem'],
   },
   {
-    label: 'Accecories',
+    label: 'Aksesoris',
     items: ['pH Meters', 'Conductivity Meters', 'Spectrophotometers', 'Chromatography Accessories', 'General Laboratory Equipment'],
   },
   {
     label: 'Lab',
-    items: ['Glassware', 'Chemicals', 'Consumables', 'Equipment'],
+    items: ['Alat Kaca', 'Bahan Kimia', 'Bahan Habis Pakai', 'Peralatan'],
   },
 ];
 
@@ -38,7 +38,7 @@ function MobileAccordionItem({ label, items, isOpen, onToggle }) {
       <ul className={`submenu-category-list${isOpen ? ' active' : ''}`}>
         {items.map((item) => (
           <li className="submenu-category" key={item}>
-            {label === 'Categories' ? (
+            {label === 'Kategori' ? (
               <Link href={`/?tab=${encodeURIComponent(item)}#product-grid`} className="submenu-title" onClick={onToggle}>{item}</Link>
             ) : (
               <Link href={`/search?q=${item}`} className="submenu-title" onClick={onToggle}>{item}</Link>
@@ -66,6 +66,11 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
   const [pendingOrderCount, setPendingOrderCount] = useState(0);
   const accountDropdownRef = useRef(null);
 
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsDropdownOpen, setNotificationsDropdownOpen] = useState(false);
+  const [mobileNotificationsOpen, setMobileNotificationsOpen] = useState(false);
+  const notificationsDropdownRef = useRef(null);
+
   // Derive display name and initials from the authenticated user
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || '';
   const displayEmail = user?.email || '';
@@ -77,6 +82,9 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
     function handleClickOutside(event) {
       if (accountDropdownRef.current && !accountDropdownRef.current.contains(event.target)) {
         setAccountDropdownOpen(false);
+      }
+      if (notificationsDropdownRef.current && !notificationsDropdownRef.current.contains(event.target)) {
+        setNotificationsDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -121,7 +129,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
     function onCartUpdated(e) { setCartItemCount(cartCount(e.detail.cart)); }
     function onWishlistUpdated(e) { setWishlistItemCount(wishlistCount(e.detail.wishlist)); }
     function onStorage(e) {
-      if (e.key === 'anon_cart')     setCartItemCount(cartCount(getCart()));
+      if (e.key === 'anon_cart') setCartItemCount(cartCount(getCart()));
       if (e.key === 'anon_wishlist') setWishlistItemCount(wishlistCount(getWishlist()));
     }
 
@@ -181,10 +189,66 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
     };
   }, []);
 
+  useEffect(() => {
+    if (!user) {
+      setNotifications([]);
+      return;
+    }
+    
+    async function loadNotifications() {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false });
+      if (!error && data) {
+        setNotifications(data);
+      }
+    }
+    loadNotifications();
+
+    const channel = supabase
+      .channel('header-notifications')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${user.id}` }, () => {
+        loadNotifications();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  const unreadCount = useMemo(() => notifications.filter(n => !n.is_read).length, [notifications]);
+
+  function formatRelativeTime(dateString) {
+    const rtf = new Intl.RelativeTimeFormat('id', { numeric: 'auto' });
+    const diff = new Date(dateString) - new Date();
+    const diffMins = Math.round(diff / 60000);
+    if (Math.abs(diffMins) < 1) return 'Baru saja';
+    if (Math.abs(diffMins) < 60) return rtf.format(diffMins, 'minute');
+    const diffHours = Math.round(diff / 3600000);
+    if (Math.abs(diffHours) < 24) return rtf.format(diffHours, 'hour');
+    const diffDays = Math.round(diff / 86400000);
+    return rtf.format(diffDays, 'day');
+  }
+
+  async function markAllAsRead() {
+    if (!user) return;
+    await supabase.from('notifications').update({ is_read: true }).eq('user_id', user.id).eq('is_read', false);
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+  }
+
+  async function clearAllNotifications() {
+    if (!user) return;
+    await supabase.from('notifications').delete().eq('user_id', user.id);
+    setNotifications([]);
+  }
+
   const mobileMenus = useMemo(() => {
-    const fullCategories = ['All Products', ...dynamicCategories];
+    const fullCategories = ['Semua Produk', ...dynamicCategories];
     return [
-      { label: 'Categories', items: fullCategories },
+      { label: 'Kategori', items: fullCategories },
       ...staticMobileMenus
     ];
   }, [dynamicCategories]);
@@ -254,10 +318,10 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                   <div style={{ fontSize: '11px', fontWeight: '600', color: 'var(--sonic-silver)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>Pembelian Saya</div>
                   <div style={{ display: 'flex', justifyContent: 'space-around' }}>
                     {[
-                      { icon: 'time-outline',        label: 'Menunggu\nBayar',  count: pendingOrderCount, status: 'pending'    },
-                      { icon: 'cube-outline',         label: 'Dikemas',           count: 0,                 status: 'processing' },
-                      { icon: 'car-outline',          label: 'Dikirim',           count: 0,                 status: 'shipped'    },
-                      { icon: 'checkmark-outline',    label: 'Selesai',           count: 0,                 status: 'delivered'  },
+                      { icon: 'time-outline', label: 'Menunggu\nBayar', count: pendingOrderCount, status: 'pending' },
+                      { icon: 'cube-outline', label: 'Dikemas', count: 0, status: 'processing' },
+                      { icon: 'car-outline', label: 'Dikirim', count: 0, status: 'shipped' },
+                      { icon: 'checkmark-outline', label: 'Selesai', count: 0, status: 'delivered' },
                     ].map(({ icon, label, count, status }) => (
                       <Link
                         key={status}
@@ -280,10 +344,10 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 {/* Menu group 1 */}
                 <div style={{ borderBottom: '1px solid var(--cultured)' }}>
                   {[
-                    { href: '/account',  icon: 'person-outline',        label: 'Profil Saya'      },
-                    { href: '/wishlist', icon: 'heart-outline',          label: 'Wishlist',        badge: wishlistItemCount },
-                    { href: '/account',  icon: 'ticket-outline',         label: 'Voucher Saya'    },
-                    { href: '/account',  icon: 'location-outline',       label: 'Alamat Tersimpan' },
+                    { href: '/account', icon: 'person-outline', label: 'Profil Saya' },
+                    { href: '/wishlist', icon: 'heart-outline', label: 'Wishlist', badge: wishlistItemCount },
+                    { href: '/account', icon: 'ticket-outline', label: 'Voucher Saya' },
+                    { href: '/account', icon: 'location-outline', label: 'Alamat Tersimpan' },
                   ].map(({ href, icon, label, badge }) => (
                     <Link
                       key={label}
@@ -327,7 +391,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
               </div>
             )}
           </nav>
-          
+
           <nav className={`mobile-navigation-menu has-scrollbar${mobileMenuOpen ? ' active' : ''}`} style={{ zIndex: 9999 }}>
             <div className="menu-top">
               <h2 className="menu-title">Menu</h2>
@@ -338,7 +402,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
 
             <ul className="mobile-menu-category-list">
               <li className="menu-category">
-                <Link href="/" className="menu-title">Home</Link>
+                <Link href="/" className="menu-title">Beranda</Link>
               </li>
               {mobileMenus.map((cat, i) => (
                 <MobileAccordionItem
@@ -355,7 +419,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
               <ul className="menu-category-list">
                 <li className="menu-category">
                   <button className={`accordion-menu${langOpen ? ' active' : ''}`} onClick={() => setLangOpen(!langOpen)}>
-                    <p className="menu-title">Language</p>
+                    <p className="menu-title">Bahasa</p>
                     <ion-icon name="caret-back-outline" className="caret-back"></ion-icon>
                   </button>
                   <ul className={`submenu-category-list${langOpen ? ' active' : ''}`}>
@@ -366,7 +430,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                 </li>
                 <li className="menu-category">
                   <button className={`accordion-menu${currOpen ? ' active' : ''}`} onClick={() => setCurrOpen(!currOpen)}>
-                    <p className="menu-title">Currency</p>
+                    <p className="menu-title">Mata Uang</p>
                     <ion-icon name="caret-back-outline" className="caret-back"></ion-icon>
                   </button>
                   <ul className={`submenu-category-list${currOpen ? ' active' : ''}`}>
@@ -405,7 +469,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
             ))}
           </ul>
           <div className="header-alert-news">
-            <p><b>Free Shipping</b> This Week Order Over - $55</p>
+            <p><b>Gratis Ongkir</b> Untuk Pesanan Minggu Ini Di Atas - Rp 50.000</p>
           </div>
           <div className="header-top-actions">
             <select name="currency">
@@ -429,11 +493,11 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
               <img src="/images/logo/labkimia_header.png" alt="Labkimia's logo" width="110" height="40" />
             </Link>
             <div className="header-search-container" style={{ position: 'relative' }}>
-              <input 
-                type="search" 
-                name="search" 
-                className="search-field" 
-                placeholder="Search your chemical products..." 
+              <input
+                type="search"
+                name="search"
+                className="search-field"
+                placeholder="Cari produk kimia Anda..."
                 value={searchQuery}
                 onChange={(e) => {
                   setSearchQuery(e.target.value);
@@ -452,7 +516,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                   scrollToGrid();
                 }}
               />
-              <button 
+              <button
                 className="search-btn"
                 onClick={handleSearchSubmit}
               >
@@ -470,8 +534,8 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
               <div className="dropdown-wrap" ref={accountDropdownRef}>
                 {user ? (
                   <>
-                    <button 
-                      className="action-btn" 
+                    <button
+                      className="action-btn"
                       onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
                       style={{ background: '#E6F1FB', color: '#185FA5', fontSize: '15px', fontWeight: '600', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}
                     >
@@ -515,9 +579,10 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                       </Link>
 
                       {/* Notifikasi */}
-                      <a href="#" className="dd-item" onClick={e => { e.preventDefault(); setAccountDropdownOpen(false); }}>
+                      <a href="#" className="dd-item" onClick={e => { e.preventDefault(); setAccountDropdownOpen(false); setNotificationsDropdownOpen(true); }}>
                         <ion-icon name="notifications-outline"></ion-icon>
                         <span className="dd-item-label">Notifikasi</span>
+                        {unreadCount > 0 && <span className="dd-badge">{unreadCount}</span>}
                       </a>
 
                       <div className="dd-sep"></div>
@@ -552,10 +617,44 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
                   </button>
                 )}
               </div>
-              <button className="action-btn">
-                <ion-icon name="notifications-outline"></ion-icon>
-                <span className="count">0</span>
-              </button>
+              <div className="dropdown-wrap" ref={notificationsDropdownRef}>
+                <button className="action-btn" onClick={() => setNotificationsDropdownOpen(!notificationsDropdownOpen)}>
+                  <ion-icon name="notifications-outline"></ion-icon>
+                  {unreadCount > 0 && <span className="count">{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                </button>
+                <div className={`notifications-dropdown ${notificationsDropdownOpen ? 'active' : ''}`} style={{ width: '260px' }}>
+                  <div className="nd-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ fontWeight: 600, fontSize: '15px' }}>Notifikasi</div>
+                    {unreadCount > 0 && (
+                      <button onClick={markAllAsRead} style={{ fontSize: '11px', color: '#185FA5', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>Tandai Semua Dibaca</button>
+                    )}
+                  </div>
+                  <div className="nd-body" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                    {notifications.length === 0 ? (
+                      <div className="nd-empty" style={{ padding: '20px', textAlign: 'center', color: 'var(--sonic-silver)', fontSize: '13px' }}>Tidak ada notifikasi</div>
+                    ) : (
+                      notifications.map(n => (
+                        <div key={n.id} className={`nd-item ${n.is_read ? '' : 'unread'}`} style={{ padding: '12px 16px', borderBottom: '1px solid var(--cultured)', display: 'flex', gap: '12px', background: n.is_read ? '#fff' : '#f4f8fc' }}>
+                          <div style={{ flexShrink: 0, width: '32px', height: '32px', borderRadius: '50%', background: '#e0ebf5', color: '#185FA5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px' }}>
+                            <ion-icon name={n.type === 'order' ? 'cube-outline' : 'information-outline'}></ion-icon>
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: '13px', fontWeight: n.is_read ? 500 : 600, color: 'var(--eerie-black)', marginBottom: '4px' }}>{n.title}</div>
+                            <div style={{ fontSize: '12px', color: 'var(--sonic-silver)', lineHeight: 1.4 }}>{n.message}</div>
+                            <div style={{ fontSize: '11px', color: '#888', marginTop: '6px' }}>{formatRelativeTime(n.created_at)}</div>
+                          </div>
+                          {!n.is_read && <div className="nd-unread-dot" style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#185FA5', marginTop: '4px' }}></div>}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                  {notifications.length > 0 && (
+                    <div className="nd-footer" style={{ padding: '10px 16px', borderTop: '1px solid var(--cultured)', textAlign: 'center' }}>
+                      <button onClick={clearAllNotifications} style={{ background: 'none', border: 'none', color: '#d32f2f', fontSize: '13px', cursor: 'pointer', fontWeight: 500 }}>Hapus Semua</button>
+                    </div>
+                  )}
+                </div>
+              </div>
               <Link href="/cart" className="action-btn">
                 <ion-icon name="bag-handle-outline"></ion-icon>
                 {cartItemCount > 0 && (
@@ -565,6 +664,51 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
             </div>
           </div>
         </div>
+
+        {/* MOBILE NOTIFICATIONS DRAWER */}
+        {isMounted && createPortal(
+          <>
+            {mobileNotificationsOpen && <div className="overlay active" onClick={() => setMobileNotificationsOpen(false)} style={{ zIndex: 9998 }}></div>}
+            <nav className={`mobile-navigation-menu has-scrollbar${mobileNotificationsOpen ? ' active' : ''}`} style={{ zIndex: 9999 }}>
+              <div className="menu-top">
+                <h2 className="menu-title">Notifikasi</h2>
+                <button className="menu-close-btn" onClick={() => setMobileNotificationsOpen(false)}>
+                  <ion-icon name="close-outline"></ion-icon>
+                </button>
+              </div>
+              <div style={{ padding: '10px 20px', display: 'flex', justifyContent: 'flex-end' }}>
+                {unreadCount > 0 && (
+                  <button onClick={markAllAsRead} style={{ fontSize: '12px', color: '#185FA5', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }}>Tandai Semua Dibaca</button>
+                )}
+              </div>
+              <div style={{ overflowY: 'auto', flex: 1 }}>
+                {notifications.length === 0 ? (
+                  <div style={{ padding: '40px 20px', textAlign: 'center', color: 'var(--sonic-silver)', fontSize: '14px' }}>Tidak ada notifikasi</div>
+                ) : (
+                  notifications.map(n => (
+                    <div key={n.id} style={{ padding: '16px 20px', borderBottom: '1px solid var(--cultured)', display: 'flex', gap: '12px', background: n.is_read ? '#fff' : '#f4f8fc' }}>
+                      <div style={{ flexShrink: 0, width: '36px', height: '36px', borderRadius: '50%', background: '#e0ebf5', color: '#185FA5', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
+                        <ion-icon name={n.type === 'order' ? 'cube-outline' : 'information-outline'}></ion-icon>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: '14px', fontWeight: n.is_read ? 500 : 600, color: 'var(--eerie-black)', marginBottom: '4px' }}>{n.title}</div>
+                        <div style={{ fontSize: '13px', color: 'var(--sonic-silver)', lineHeight: 1.4 }}>{n.message}</div>
+                        <div style={{ fontSize: '11px', color: '#888', marginTop: '8px' }}>{formatRelativeTime(n.created_at)}</div>
+                      </div>
+                      {!n.is_read && <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#185FA5', marginTop: '6px' }}></div>}
+                    </div>
+                  ))
+                )}
+              </div>
+              {notifications.length > 0 && (
+                <div style={{ padding: '16px', borderTop: '1px solid var(--cultured)', textAlign: 'center', marginTop: 'auto' }}>
+                  <button onClick={clearAllNotifications} style={{ background: 'none', border: 'none', color: '#d32f2f', fontSize: '14px', cursor: 'pointer', fontWeight: 500 }}>Hapus Semua</button>
+                </div>
+              )}
+            </nav>
+          </>,
+          document.body
+        )}
 
         {/* MOBILE BOTTOM NAV */}
         <div className="mobile-bottom-navigation">
@@ -580,9 +724,9 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
           <Link href="/" className="action-btn">
             <ion-icon name="home-outline"></ion-icon>
           </Link>
-          <button className="action-btn">
+          <button className="action-btn" onClick={() => setMobileNotificationsOpen(true)}>
             <ion-icon name="notifications-outline"></ion-icon>
-            <span className="count">0</span>
+            {unreadCount > 0 && <span className="count">{unreadCount > 99 ? '99+' : unreadCount}</span>}
           </button>
           <button className="action-btn" onClick={openMobile}>
             <ion-icon name="grid-outline"></ion-icon>
@@ -599,14 +743,14 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
           <ul className="desktop-menu-category-list">
             {/*this is menu home*/}
             <li className="menu-category">
-              <Link href="/" className="menu-title">Home</Link>
+              <Link href="/" className="menu-title">Beranda</Link>
             </li>
             {/*this is menu categories*/}
             <li className="menu-category">
-              <a href="#" className="menu-title">Categories</a>
+              <a href="#" className="menu-title">Kategori</a>
               <ul className="dropdown-list">
                 <li className="dropdown-item" key="All Products">
-                  <Link href="/?tab=All%20Products#product-grid">All Products</Link>
+                  <Link href="/?tab=Semua%20Produk#product-grid">Semua Produk</Link>
                 </li>
                 {dynamicCategories.map(i => (
                   <li className="dropdown-item" key={i}>
@@ -617,7 +761,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
             </li>
             {/*this is menu Brands*/}
             <li className="menu-category">
-              <a href="#" className="menu-title">Brands</a>
+              <a href="#" className="menu-title">Merek</a>
               <ul className="dropdown-list">
                 {['Merck', 'Loba Chemie', 'Sigma-Aldrich', 'Spectrochem'].map(i => (
                   <li className="dropdown-item" key={i}><a href="#">{i}</a></li>
@@ -626,7 +770,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
             </li>
             {/*this is menu Accecories*/}
             <li className="menu-category">
-              <a href="#" className="menu-title">Accecories</a>
+              <a href="#" className="menu-title">Aksesoris</a>
               <ul className="dropdown-list">
                 {['pH Meters', 'Conductivity Meters', 'Spectrophotometers', 'Chromatography Accessories', 'General Laboratory Equipment'].map(i => (
                   <li className="dropdown-item" key={i}><a href="#">{i}</a></li>

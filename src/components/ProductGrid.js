@@ -12,9 +12,9 @@ export default function ProductGrid({ searchQuery = '' }) {
   const searchParams = useSearchParams();
   const urlTab = searchParams ? searchParams.get('tab') : null;
 
-  const [activeTab, setActiveTab] = useState('All Products');
+  const [activeTab, setActiveTab] = useState('Semua Produk');
   const [currentPage, setCurrentPage] = useState(1);
-  const [productsData, setProductsData] = useState({ 'All Products': [] });
+  const [productsData, setProductsData] = useState({ 'Semua Produk': [] });
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
   const tabsRef = useRef(null);
@@ -92,7 +92,7 @@ export default function ProductGrid({ searchQuery = '' }) {
 
           const priceStr = item.harga ? `Rp ${item.harga.toLocaleString()}` : 'Rp 0';
 
-          let rawType = item.product_type || 'Uncategorized';
+          let rawType = item.product_type || 'Tanpa Kategori';
           let categoryStr = rawType.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 
           return {
@@ -103,7 +103,7 @@ export default function ProductGrid({ searchQuery = '' }) {
             badge: item.stok > 0 ? null : 'sold out',
             badgeClass: item.stok > 0 ? '' : 'angle black',
             category: categoryStr,
-            title: item.nama_produk || 'Untitled Product',
+            title: item.nama_produk || 'Produk Tanpa Nama',
             stars: starsArray,
             price: priceStr,
             oldPrice: null,
@@ -111,7 +111,7 @@ export default function ProductGrid({ searchQuery = '' }) {
         });
 
         const cats = Array.from(new Set(formattedProducts.map(p => p.category))).sort();
-        const newProductsData = { 'All Products': formattedProducts };
+        const newProductsData = { 'Semua Produk': formattedProducts };
         cats.forEach(cat => {
           newProductsData[cat] = formattedProducts.filter(p => p.category === cat);
         });
@@ -302,3 +302,4 @@ export default function ProductGrid({ searchQuery = '' }) {
     </div>
   );
 }
+

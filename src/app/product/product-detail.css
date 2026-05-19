@@ -430,8 +430,15 @@
 }
 
 @keyframes pd-toast-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ─── Shipping box ─── */
@@ -802,7 +809,9 @@
 }
 
 @keyframes pd-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* ─── Not found ─── */
@@ -858,8 +867,13 @@
 }
 
 @keyframes pd-cm-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .pd-cm {
@@ -873,8 +887,15 @@
 }
 
 @keyframes pd-cm-slide-up {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)   scale(1); }
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Header */
@@ -899,12 +920,12 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: hsla(152, 51%, 52%, 0.15);
-  color: var(--ocean-green);
+  background: hsla(125, 94%, 39%, 0.958);
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: 20px;
   flex-shrink: 0;
 }
 
@@ -1065,4 +1086,66 @@
 
 .pd-cm-btn-view ion-icon {
   font-size: 16px;
+}/* --- Review Modal & Write Review Button --- */
+.pd-btn-write-review {
+  padding: 8px 14px;
+  background: var(--white);
+  color: var(--brand-blue);
+  border: 1px solid var(--brand-blue);
+  border-radius: var(--border-radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.pd-btn-write-review:hover {
+  background: var(--brand-blue);
+  color: var(--white);
+}
+
+.pd-rm-body {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--cultured);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pd-rm-rating label,
+.pd-rm-comment label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--eerie-black);
+  margin-bottom: 8px;
+}
+
+.pd-rm-stars-input {
+  display: flex;
+  gap: 4px;
+}
+
+.pd-rm-comment textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--cultured);
+  border-radius: var(--border-radius-sm);
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--eerie-black);
+  resize: vertical;
+  min-height: 80px;
+}
+
+.pd-rm-comment textarea:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+}
+
+.pd-no-reviews {
+  color: var(--sonic-silver);
+  font-size: 13px;
+  text-align: center;
+  padding: 20px 0;
 }

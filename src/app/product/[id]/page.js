@@ -10,6 +10,7 @@ import { addToCart, addToCartRemote } from '../../../lib/cartUtils';
 import { toggleWishlist, isWishlisted, toggleWishlistRemote, isWishlistedRemote } from '../../../lib/wishlistUtils';
 import Header from '../../../components/Header';
 import Footer from '../../../components/Footer';
+
 import '../product-detail.css';
 
 function formatPrice(n) {
@@ -17,7 +18,7 @@ function formatPrice(n) {
 }
 
 function formatCategory(raw) {
-  if (!raw) return 'Uncategorized';
+  if (!raw) return 'Tanpa Kategori';
   return raw.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
 }
 
@@ -33,6 +34,11 @@ function ProductDetailContent({ id }) {
   const [cartModal, setCartModal] = useState(false);
   const [toastTimer, setToastTimer] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [soldCount, setSoldCount] = useState(0);
+  const [reviews, setReviews] = useState([]);
+  const [reviewModal, setReviewModal] = useState(false);
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState('');
   const router = useRouter();
 
   useEffect(() => {
@@ -101,7 +107,79 @@ function ProductDetailContent({ id }) {
             </div>
           </div>
         </main>
-        <Footer />
+        {/* Review Modal */}
+      {reviewModal && (
+        <div className="pd-cm-overlay" onClick={() => setReviewModal(false)}>
+          <div className="pd-cm pd-rm" onClick={e => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Tulis Ulasan">
+            <div className="pd-cm-header">
+              <div className="pd-cm-header-title">Tulis Ulasan</div>
+              <button className="pd-cm-close" onClick={() => setReviewModal(false)} aria-label="Tutup">
+                <ion-icon name="close-outline" aria-hidden="true"></ion-icon>
+              </button>
+            </div>
+            <div className="pd-rm-body">
+              <div className="pd-rm-rating">
+                <label>Rating</label>
+                <div className="pd-rm-stars-input">
+                  {[1, 2, 3, 4, 5].map(star => (
+                    <ion-icon
+                      key={star}
+                      name={rating >= star ? "star" : "star-outline"}
+                      onClick={() => setRating(star)}
+                      style={{ cursor: 'pointer', color: '#EF9F27', fontSize: '28px', marginRight: '4px' }}
+                    ></ion-icon>
+                  ))}
+                </div>
+              </div>
+              <div className="pd-rm-comment">
+                <label>Komentar (opsional)</label>
+                <textarea
+                  placeholder="Ceritakan pengalamanmu dengan produk ini..."
+                  value={comment}
+                  onChange={e => setComment(e.target.value)}
+                  rows={4}
+                ></textarea>
+              </div>
+            </div>
+            <div className="pd-cm-actions">
+              <button className="pd-cm-btn-continue" onClick={() => setReviewModal(false)}>Batal</button>
+              <button
+                className="pd-cm-btn-view"
+                disabled={!rating}
+                style={!rating ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                onClick={async () => {
+                  try {
+                    const { error } = await supabase.from('reviews').insert({
+                      product_id: product.id,
+                      user_id: user.id,
+                      reviewer_name: user?.user_metadata?.full_name || 'Anonymous',
+                      rating,
+                      comment
+                    });
+                    if (error) throw error;
+                    
+                    showToast('Ulasan berhasil dikirim!');
+                    setReviewModal(false);
+                    setRating(0);
+                    setComment('');
+                    
+                    // Refresh reviews
+                    const { data: revs } = await supabase.from('reviews').select('*').eq('product_id', id).order('created_at', { ascending: false });
+                    setReviews(revs || []);
+                  } catch(e) {
+                    console.error(e);
+                    showToast(e.message.includes('duplicate key') ? 'Kamu sudah mengulas produk ini.' : 'Gagal mengirim ulasan.');
+                  }
+                }}
+              >
+                Kirim Ulasan
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      <Footer />
       </>
     );
   }
@@ -130,6 +208,13 @@ function ProductDetailContent({ id }) {
   const isSoldOut = product.stok !== undefined && product.stok <= 0;
   const isLowStock = product.stok > 0 && product.stok <= 5;
   const subtotal = formatPrice(price * qty);
+
+  const avgRating = reviews.length > 0 ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) : '0.0';
+  const starCounts = [5, 4, 3, 2, 1].map(star => {
+    const count = reviews.filter(r => r.rating === star).length;
+    const pct = reviews.length > 0 ? Math.round((count / reviews.length) * 100) : 0;
+    return [star, pct];
+  });
 
   return (
     <>
@@ -188,10 +273,10 @@ function ProductDetailContent({ id }) {
               <div className="pd-prod-name">{product.nama_produk}</div>
 
               <div className="pd-rating-row">
-                <span className="pd-stars">★★★★☆</span>
-                <span className="pd-rating-num">4.2</span>
-                <span className="pd-rating-count">(87 ulasan)</span>
-                <span className="pd-sold-count">124 terjual</span>
+                <span className="pd-stars">{'★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating))}</span>
+                <span className="pd-rating-num">{avgRating}</span>
+                <span className="pd-rating-count">({reviews.length} ulasan)</span>
+                <span className="pd-sold-count">{soldCount} terjual</span>
               </div>
 
               <div className="pd-price-box">
@@ -305,36 +390,6 @@ function ProductDetailContent({ id }) {
             </div>
           </div>
 
-          {/* Shipping info */}
-          <div className="pd-ship-box">
-            <div className="pd-ship-title">
-              <ion-icon name="car-outline" aria-hidden="true"></ion-icon>
-              Pengiriman &amp; toko
-            </div>
-            <div className="pd-ship-row">
-              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
-              <span className="pd-ship-label">Dikirim dari</span>
-              <span className="pd-ship-val">Jakarta Selatan</span>
-            </div>
-            <div className="pd-ship-row">
-              <ion-icon name="cube-outline" aria-hidden="true"></ion-icon>
-              <span className="pd-ship-label">Estimasi</span>
-              <span className="pd-ship-val">Tiba dalam <strong>2–3 hari kerja</strong></span>
-            </div>
-            <div className="pd-ship-row">
-              <ion-icon name="receipt-outline" aria-hidden="true"></ion-icon>
-              <span className="pd-ship-label">Ongkir</span>
-              <span className="pd-ship-val green">
-                <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon>
-                Gratis ongkir
-              </span>
-            </div>
-            <div className="pd-ship-row">
-              <ion-icon name="return-down-back-outline" aria-hidden="true"></ion-icon>
-              <span className="pd-ship-label">Retur</span>
-              <span className="pd-ship-val">Gratis retur dalam 7 hari</span>
-            </div>
-          </div>
 
           {/* Description + Specs */}
           <div className="pd-section-card">
@@ -343,8 +398,14 @@ function ProductDetailContent({ id }) {
               Deskripsi produk
             </div>
             <div className="pd-desc-text">
-              <p>Produk berkualitas dari kategori {category}. Tersedia dengan stok terbatas.</p>
-              <p>Pastikan kamu memesan sebelum kehabisan. Produk dikirim langsung dari gudang kami dengan pengemasan yang aman.</p>
+              {product.notes ? (
+                product.notes.split('\n').map((line, i) => <p key={i}>{line}</p>)
+              ) : (
+                <>
+                  <p>Produk berkualitas dari kategori {category}. Tersedia dengan stok terbatas.</p>
+                  <p>Pastikan kamu memesan sebelum kehabisan. Produk dikirim langsung dari gudang kami dengan pengemasan yang aman.</p>
+                </>
+              )}
             </div>
             <div className="pd-specs">
               <div className="pd-spec-row">
@@ -376,20 +437,58 @@ function ProductDetailContent({ id }) {
             </div>
           </div>
 
+          {/* Shipping info */}
+          <div className="pd-ship-box">
+            <div className="pd-ship-title">
+              <ion-icon name="car-outline" aria-hidden="true"></ion-icon>
+              Pengiriman &amp; toko
+            </div>
+            <div className="pd-ship-row">
+              <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+              <span className="pd-ship-label">Dikirim dari</span>
+              <span className="pd-ship-val">Jakarta Selatan</span>
+            </div>
+            <div className="pd-ship-row">
+              <ion-icon name="cube-outline" aria-hidden="true"></ion-icon>
+              <span className="pd-ship-label">Estimasi</span>
+              <span className="pd-ship-val">Tiba dalam <strong>2–3 hari kerja</strong></span>
+            </div>
+            <div className="pd-ship-row">
+              <ion-icon name="receipt-outline" aria-hidden="true"></ion-icon>
+              <span className="pd-ship-label">Ongkir</span>
+              <span className="pd-ship-val green">
+                <ion-icon name="checkmark-outline" aria-hidden="true"></ion-icon>
+                Gratis ongkir
+              </span>
+            </div>
+            <div className="pd-ship-row">
+              <ion-icon name="return-down-back-outline" aria-hidden="true"></ion-icon>
+              <span className="pd-ship-label">Retur</span>
+              <span className="pd-ship-val">Gratis retur dalam 7 hari</span>
+            </div>
+          </div>
+
           {/* Reviews */}
           <div className="pd-section-card">
-            <div className="pd-section-title">
-              <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
-              Ulasan pembeli
+            <div className="pd-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '7px' }}>
+                <ion-icon name="star-outline" aria-hidden="true"></ion-icon>
+                Ulasan pembeli
+              </div>
+              {user && (
+                <button className="pd-btn-write-review" onClick={() => setReviewModal(true)}>
+                  Tulis Ulasan
+                </button>
+              )}
             </div>
             <div className="pd-review-summary">
               <div className="pd-rev-score">
-                <div className="pd-rev-score-num">4.2</div>
-                <div className="pd-rev-score-stars">★★★★☆</div>
-                <div className="pd-rev-score-count">87 ulasan</div>
+                <div className="pd-rev-score-num">{avgRating}</div>
+                <div className="pd-rev-score-stars">{'★'.repeat(Math.round(avgRating)) + '☆'.repeat(5 - Math.round(avgRating))}</div>
+                <div className="pd-rev-score-count">{reviews.length} ulasan</div>
               </div>
               <div className="pd-rev-bars">
-                {[[5, 60], [4, 20], [3, 12], [2, 5], [1, 3]].map(([star, pct]) => (
+                {starCounts.map(([star, pct]) => (
                   <div key={star} className="pd-rev-bar-row">
                     <span className="pd-rev-bar-label">{star}</span>
                     <div className="pd-rev-bar-track">
@@ -401,29 +500,27 @@ function ProductDetailContent({ id }) {
               </div>
             </div>
 
-            <div className="pd-review-item">
-              <div className="pd-rev-header">
-                <div className="pd-rev-avatar">BS</div>
-                <div>
-                  <div className="pd-rev-name">Budi S.</div>
-                  <div className="pd-rev-stars">★★★★★</div>
+            {reviews.length > 0 ? (
+              reviews.map(rev => (
+                <div key={rev.id} className="pd-review-item">
+                  <div className="pd-rev-header">
+                    <div className="pd-rev-avatar">{rev.reviewer_name.charAt(0).toUpperCase()}</div>
+                    <div>
+                      <div className="pd-rev-name">{rev.reviewer_name}</div>
+                      <div className="pd-rev-stars" style={{ color: '#EF9F27', fontSize: '12px' }}>
+                        {'★'.repeat(rev.rating) + '☆'.repeat(5 - rev.rating)}
+                      </div>
+                    </div>
+                    <span className="pd-rev-date">
+                      {new Date(rev.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                  <div className="pd-rev-text">{rev.comment}</div>
                 </div>
-                <span className="pd-rev-date">3 hari lalu</span>
-              </div>
-              <div className="pd-rev-text">Kualitas bagus untuk harganya! Pengiriman cepat dan packing aman. Sangat direkomendasikan.</div>
-            </div>
-
-            <div className="pd-review-item">
-              <div className="pd-rev-header">
-                <div className="pd-rev-avatar" style={{ background: '#E1F5EE', color: '#085041' }}>RA</div>
-                <div>
-                  <div className="pd-rev-name">Rina A.</div>
-                  <div className="pd-rev-stars">★★★★☆</div>
-                </div>
-                <span className="pd-rev-date">1 minggu lalu</span>
-              </div>
-              <div className="pd-rev-text">Produk sesuai deskripsi. Pelayanan toko ramah dan responsif.</div>
-            </div>
+              ))
+            ) : (
+              <div className="pd-no-reviews" style={{ color: 'var(--sonic-silver)', fontSize: '13px', textAlign: 'center', padding: '20px 0' }}>Belum ada ulasan untuk produk ini.</div>
+            )}
           </div>
 
           {/* Related products */}
@@ -510,7 +607,6 @@ function ProductDetailContent({ id }) {
           </div>
         </div>
       )}
-
       <Footer />
     </>
   );
