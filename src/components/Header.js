@@ -194,7 +194,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
       setNotifications([]);
       return;
     }
-    
+
     async function loadNotifications() {
       const { data, error } = await supabase
         .from('notifications')
@@ -456,7 +456,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
         document.body
       )}
 
-      {/* HEADER TOP - outside sticky header */}
+      {/* HEADER TOP - outside sticky header *
       <div className="header-top">
         <div className="container">
           <ul className="header-social-container">
@@ -483,7 +483,7 @@ export default function Header({ onMenuOpenForSidebar, searchQuery, setSearchQue
             </select>
           </div>
         </div>
-      </div>
+      </div>*/}
 
       <header>
         {/* HEADER MAIN */}
