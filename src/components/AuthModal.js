@@ -90,7 +90,9 @@ export default function AuthModal({ onClose }) {
       const { error: authErr } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: typeof window !== 'undefined' ? window.location.origin + '/' : '/',
+          redirectTo: typeof window !== 'undefined'
+            ? `${window.location.origin}/auth/callback`
+            : '/auth/callback',
         },
       });
       if (authErr) throw authErr;
