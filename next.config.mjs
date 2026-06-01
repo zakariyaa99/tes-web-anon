@@ -9,6 +9,9 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  // Jangan bundle package ini — biarkan Node.js resolve natively
+  // agar ProxyAgent bisa membuat TCP connection lewat Fixie proxy
+  serverExternalPackages: ['undici', 'https-proxy-agent'],
 };
 
 export default nextConfig;

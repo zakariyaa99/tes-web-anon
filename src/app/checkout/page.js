@@ -15,16 +15,28 @@ function formatPrice(n) {
   return `Rp ${Number(n).toLocaleString('id-ID')}`;
 }
 
+const VA_BANKS = [
+  { value: 'bca',     label: 'BCA' },
+  { value: 'bni',     label: 'BNI' },
+  { value: 'bri',     label: 'BRI' },
+  { value: 'mandiri', label: 'Mandiri' },
+  { value: 'cimb',    label: 'CIMB Niaga' },
+  { value: 'permata', label: 'Permata' },
+];
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, loading: authLoading, openAuthModal } = useAuth();
 
-  const [cart, setCart] = useState([]);
+  const [cart, setCart]           = useState([]);
   const [cartLoaded, setCartLoaded] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [paying, setPaying] = useState(false);
-  const [toast, setToast] = useState('');
+  const [paying, setPaying]       = useState(false);
+  const [toast, setToast]         = useState('');
   const [snapLoaded, setSnapLoaded] = useState(false);
+
+  // ── Payment method states ────────────────────────────────────────────────
+  const [paymentGateway, setPaymentGateway] = useState('ipaymu'); // midtrans | ipaymu
 
   const [form, setForm] = useState({
     name: '', phone: '', address: '', city: '', postal: '',
@@ -36,11 +48,8 @@ export default function CheckoutPage() {
     if (authLoading) return;
     async function load() {
       if (user) {
-        try {
-          setCart(await getRemoteCart(user.id));
-        } catch {
-          setCart(getCart());
-        }
+        try { setCart(await getRemoteCart(user.id)); }
+        catch { setCart(getCart()); }
       } else {
         setCart(getCart());
       }
@@ -58,15 +67,13 @@ export default function CheckoutPage() {
       .eq('id', user.id)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) {
-          setForm({
-            name:    data.full_name   || '',
-            phone:   data.phone       || '',
-            address: data.address     || '',
-            city:    data.city        || '',
-            postal:  data.postal_code || '',
-          });
-        }
+        if (data) setForm({
+          name:    data.full_name   || '',
+          phone:   data.phone       || '',
+          address: data.address     || '',
+          city:    data.city        || '',
+          postal:  data.postal_code || '',
+        });
       });
   }, [user]);
 
@@ -90,6 +97,13 @@ export default function CheckoutPage() {
     setTimeout(() => setToast(''), 4000);
   }
 
+  function copyToClipboard(text) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast('Nomor VA berhasil disalin!'))
+      .catch(() => showToast('Gagal menyalin. Salin manual.'));
+  }
+
+  // ── Main pay handler ─────────────────────────────────────────────────────
   async function handlePay() {
     const errs = validate();
     if (Object.keys(errs).length > 0) {
@@ -98,21 +112,48 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!window.snap) {
+    if (paymentGateway === 'midtrans' && !window.snap) {
       showToast('Payment system belum siap. Coba lagi sebentar.');
       return;
     }
 
     setPaying(true);
+
     try {
-      // Get the user's current session token
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
 
-      const res = await fetch('/api/checkout', {
+      // ── Midtrans flow (existing) ─────────────────────────────────────────
+      if (paymentGateway === 'midtrans') {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ cart, shipping: form }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal membuat pesanan.');
+
+        window.snap.pay(data.snap_token, {
+          onSuccess: () => router.push('/orders?status=success'),
+          onPending: () => router.push('/orders?status=pending'),
+          onError:   (err) => {
+            console.error('Snap error', err);
+            showToast('Pembayaran gagal. Silakan coba lagi.');
+            setPaying(false);
+          },
+          onClose: () => setPaying(false),
+        });
+        return;
+      }
+
+      // ── iPaymu flow — buka popup halaman pembayaran iPaymu ───────────────
+      const res = await fetch('/api/ipaymu', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type':  'application/json',
           'Authorization': `Bearer ${token}`,
         },
         body: JSON.stringify({ cart, shipping: form }),
@@ -121,33 +162,28 @@ export default function CheckoutPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Gagal membuat pesanan.');
 
-      // Open Midtrans Snap popup
-      window.snap.pay(data.snap_token, {
-        onSuccess: () => router.push('/orders?status=success'),
-        onPending: () => router.push('/orders?status=pending'),
-        onError:   (err) => {
-          console.error('Snap error', err);
-          showToast('Pembayaran gagal. Silakan coba lagi.');
-          setPaying(false);
-        },
-        onClose: () => setPaying(false),
-      });
+      if (!data.payment_url) throw new Error('URL pembayaran tidak tersedia.');
+
+      // Redirect langsung ke halaman pembayaran iPaymu
+      window.location.href = data.payment_url;
+
     } catch (err) {
       console.error(err);
       showToast(err.message || 'Terjadi kesalahan. Silakan coba lagi.');
+    } finally {
       setPaying(false);
     }
   }
 
-  const total = cartTotal(cart);
+  const total     = cartTotal(cart);
   const itemCount = cart.reduce((s, i) => s + i.qty, 0);
 
-  const IS_PRODUCTION = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.startsWith('Mid-client-');
-  const snapSrc = IS_PRODUCTION
+  const IS_PRODUCTION_MT = process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY?.startsWith('Mid-client-');
+  const snapSrc = IS_PRODUCTION_MT
     ? 'https://app.midtrans.com/snap/snap.js'
     : 'https://app.sandbox.midtrans.com/snap/snap.js';
 
-  // ── Not logged in ────────────────────────────────────────────────────────
+  // ── Not logged in ─────────────────────────────────────────────────────────
   if (!authLoading && !user) {
     return (
       <>
@@ -169,7 +205,7 @@ export default function CheckoutPage() {
     );
   }
 
-  // ── Cart empty ───────────────────────────────────────────────────────────
+  // ── Cart empty ────────────────────────────────────────────────────────────
   if (cartLoaded && cart.length === 0) {
     return (
       <>
@@ -194,13 +230,15 @@ export default function CheckoutPage() {
 
   return (
     <>
-      {/* Load Midtrans Snap.js */}
-      <Script
-        src={snapSrc}
-        data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
-        strategy="afterInteractive"
-        onLoad={() => setSnapLoaded(true)}
-      />
+      {/* Load Midtrans Snap.js hanya saat dibutuhkan */}
+      {paymentGateway === 'midtrans' && (
+        <Script
+          src={snapSrc}
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY}
+          strategy="afterInteractive"
+          onLoad={() => setSnapLoaded(true)}
+        />
+      )}
 
       <Header searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
 
@@ -210,6 +248,8 @@ export default function CheckoutPage() {
           {toast}
         </div>
       )}
+
+
 
       <main className="checkout-page">
         <div className="checkout-container">
@@ -227,78 +267,146 @@ export default function CheckoutPage() {
 
           <div className="checkout-layout">
 
-            {/* ── Left: Shipping address ── */}
-            <div className="checkout-card">
-              <div className="checkout-card-header">
-                <h2 className="checkout-card-title">
-                  <ion-icon name="location-outline" />
-                  Alamat Pengiriman
-                </h2>
-                <p className="checkout-card-subtitle">Pastikan alamat lengkap dan dapat dijangkau kurir.</p>
+            {/* ── Left column ─────────────────────────────────────────────── */}
+            <div>
+
+              {/* Shipping address card */}
+              <div className="checkout-card" style={{ marginBottom: 24 }}>
+                <div className="checkout-card-header">
+                  <h2 className="checkout-card-title">
+                    <ion-icon name="location-outline" />
+                    Alamat Pengiriman
+                  </h2>
+                  <p className="checkout-card-subtitle">Pastikan alamat lengkap dan dapat dijangkau kurir.</p>
+                </div>
+
+                <form className="checkout-form" onSubmit={e => { e.preventDefault(); handlePay(); }}>
+                  <div className="checkout-form-grid">
+
+                    <div className="checkout-field">
+                      <label htmlFor="co-name">Nama Penerima *</label>
+                      <input
+                        id="co-name" name="name" type="text"
+                        value={form.name} onChange={handleChange}
+                        placeholder="Nama lengkap penerima"
+                        className={fieldErrors.name ? 'error' : ''}
+                      />
+                      {fieldErrors.name && <span className="checkout-field-error">{fieldErrors.name}</span>}
+                    </div>
+
+                    <div className="checkout-field">
+                      <label htmlFor="co-phone">Nomor Telepon *</label>
+                      <input
+                        id="co-phone" name="phone" type="tel"
+                        value={form.phone} onChange={handleChange}
+                        placeholder="08xxxxxxxxxx"
+                        className={fieldErrors.phone ? 'error' : ''}
+                      />
+                      {fieldErrors.phone && <span className="checkout-field-error">{fieldErrors.phone}</span>}
+                    </div>
+
+                    <div className="checkout-field full">
+                      <label htmlFor="co-address">Alamat Lengkap *</label>
+                      <textarea
+                        id="co-address" name="address"
+                        value={form.address} onChange={handleChange}
+                        placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan"
+                        rows={3}
+                        className={fieldErrors.address ? 'error' : ''}
+                      />
+                      {fieldErrors.address && <span className="checkout-field-error">{fieldErrors.address}</span>}
+                    </div>
+
+                    <div className="checkout-field">
+                      <label htmlFor="co-city">Kota / Kabupaten *</label>
+                      <input
+                        id="co-city" name="city" type="text"
+                        value={form.city} onChange={handleChange}
+                        placeholder="Contoh: Jakarta Selatan"
+                        className={fieldErrors.city ? 'error' : ''}
+                      />
+                      {fieldErrors.city && <span className="checkout-field-error">{fieldErrors.city}</span>}
+                    </div>
+
+                    <div className="checkout-field">
+                      <label htmlFor="co-postal">Kode Pos</label>
+                      <input
+                        id="co-postal" name="postal" type="text"
+                        value={form.postal} onChange={handleChange}
+                        placeholder="Contoh: 12345"
+                      />
+                    </div>
+
+                  </div>
+                </form>
               </div>
 
-              <form className="checkout-form" onSubmit={e => { e.preventDefault(); handlePay(); }}>
-                <div className="checkout-form-grid">
+              {/* Payment method card */}
+              <div className="checkout-card checkout-payment-card">
+                <div className="checkout-card-header">
+                  <h2 className="checkout-card-title">
+                    <ion-icon name="card-outline" />
+                    Metode Pembayaran
+                  </h2>
+                  <p className="checkout-card-subtitle">Pilih cara pembayaran yang kamu inginkan.</p>
+                </div>
 
-                  <div className="checkout-field">
-                    <label htmlFor="co-name">Nama Penerima *</label>
+                <div className="checkout-payment-body">
+
+                  {/* Midtrans option — hidden, code preserved for future use */}
+                  <label
+                    className={`checkout-gw-option ${paymentGateway === 'midtrans' ? 'active' : ''}`}
+                    htmlFor="gw-midtrans"
+                    style={{ display: 'none' }}
+                  >
                     <input
-                      id="co-name" name="name" type="text"
-                      value={form.name} onChange={handleChange}
-                      placeholder="Nama lengkap penerima"
-                      className={fieldErrors.name ? 'error' : ''}
+                      type="radio" id="gw-midtrans" name="paymentGateway" value="midtrans"
+                      checked={paymentGateway === 'midtrans'}
+                      onChange={() => setPaymentGateway('midtrans')}
                     />
-                    {fieldErrors.name && <span className="checkout-field-error">{fieldErrors.name}</span>}
-                  </div>
+                    <div className="checkout-gw-icon checkout-gw-icon--midtrans">
+                      <ion-icon name="wallet-outline" />
+                    </div>
+                    <div className="checkout-gw-info">
+                      <span className="checkout-gw-name">Midtrans</span>
+                      <span className="checkout-gw-desc">Kartu kredit/debit, GoPay, OVO, DANA, Virtual Account</span>
+                    </div>
+                    <div className={`checkout-gw-radio ${paymentGateway === 'midtrans' ? 'checked' : ''}`} />
+                  </label>
 
-                  <div className="checkout-field">
-                    <label htmlFor="co-phone">Nomor Telepon *</label>
+                  {/* iPaymu option */}
+                  <label
+                    className={`checkout-gw-option ${paymentGateway === 'ipaymu' ? 'active' : ''}`}
+                    htmlFor="gw-ipaymu"
+                  >
                     <input
-                      id="co-phone" name="phone" type="tel"
-                      value={form.phone} onChange={handleChange}
-                      placeholder="08xxxxxxxxxx"
-                      className={fieldErrors.phone ? 'error' : ''}
+                      type="radio" id="gw-ipaymu" name="paymentGateway" value="ipaymu"
+                      checked={paymentGateway === 'ipaymu'}
+                      onChange={() => setPaymentGateway('ipaymu')}
                     />
-                    {fieldErrors.phone && <span className="checkout-field-error">{fieldErrors.phone}</span>}
-                  </div>
+                    <div className="checkout-gw-icon checkout-gw-icon--ipaymu">
+                      <ion-icon name="shield-checkmark-outline" />
+                    </div>
+                    <div className="checkout-gw-info">
+                      <span className="checkout-gw-name">iPaymu</span>
+                      <span className="checkout-gw-desc">Virtual Account (BCA, BNI, BRI, Mandiri, dll), QRIS</span>
+                    </div>
+                    <div className={`checkout-gw-radio ${paymentGateway === 'ipaymu' ? 'checked' : ''}`} />
+                  </label>
 
-                  <div className="checkout-field full">
-                    <label htmlFor="co-address">Alamat Lengkap *</label>
-                    <textarea
-                      id="co-address" name="address"
-                      value={form.address} onChange={handleChange}
-                      placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan"
-                      rows={3}
-                      className={fieldErrors.address ? 'error' : ''}
-                    />
-                    {fieldErrors.address && <span className="checkout-field-error">{fieldErrors.address}</span>}
-                  </div>
-
-                  <div className="checkout-field">
-                    <label htmlFor="co-city">Kota / Kabupaten *</label>
-                    <input
-                      id="co-city" name="city" type="text"
-                      value={form.city} onChange={handleChange}
-                      placeholder="Contoh: Jakarta Selatan"
-                      className={fieldErrors.city ? 'error' : ''}
-                    />
-                    {fieldErrors.city && <span className="checkout-field-error">{fieldErrors.city}</span>}
-                  </div>
-
-                  <div className="checkout-field">
-                    <label htmlFor="co-postal">Kode Pos</label>
-                    <input
-                      id="co-postal" name="postal" type="text"
-                      value={form.postal} onChange={handleChange}
-                      placeholder="Contoh: 12345"
-                    />
-                  </div>
+                  {/* iPaymu info — pilihan metode ditampilkan di halaman iPaymu */}
+                  {paymentGateway === 'ipaymu' && (
+                    <div className="checkout-ipaymu-info">
+                      <ion-icon name="information-circle-outline" />
+                      Kamu akan diarahkan ke halaman pembayaran iPaymu untuk memilih metode (VA, QRIS, dll).
+                    </div>
+                  )}
 
                 </div>
-              </form>
+              </div>
             </div>
 
-            {/* ── Right: Order summary ── */}
+            {/* ── Right: Order summary ─────────────────────────────────────── */}
             <aside className="checkout-card checkout-summary">
               <div className="checkout-card-header">
                 <h2 className="checkout-card-title">
@@ -317,8 +425,10 @@ export default function CheckoutPage() {
                       </div>
                       <div className="checkout-sum-info">
                         <div className="checkout-sum-name">{item.name}</div>
-                        {item.packSize && <div className="checkout-sum-meta">{item.packSize} × {item.qty}</div>}
-                        {!item.packSize && <div className="checkout-sum-meta">Qty: {item.qty}</div>}
+                        {item.packSize
+                          ? <div className="checkout-sum-meta">{item.packSize} × {item.qty}</div>
+                          : <div className="checkout-sum-meta">Qty: {item.qty}</div>
+                        }
                       </div>
                       <div className="checkout-sum-price">{formatPrice(item.price * item.qty)}</div>
                     </div>
@@ -359,7 +469,7 @@ export default function CheckoutPage() {
 
                 <p className="checkout-secure-note">
                   <ion-icon name="shield-checkmark-outline" />
-                  Pembayaran aman melalui Midtrans
+                  Pembayaran aman melalui {paymentGateway === 'ipaymu' ? 'iPaymu' : 'Midtrans'}
                 </p>
               </div>
             </aside>

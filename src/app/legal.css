@@ -1,0 +1,239 @@
+/* ── Halaman Legal (FAQ, Refund, T&C, Privacy) ───────────────────────── */
+.legal-page {
+  min-height: 100vh;
+  background: #f7f9fc;
+  padding: 40px 0 80px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.legal-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+/* Navigasi Row */
+.legal-nav-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 32px;
+}
+
+.legal-back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--sonic-silver, #787878);
+  text-decoration: none;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 30px;
+  border: 1px solid #e8edf5;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.legal-back-btn:hover {
+  color: #185FA5;
+  background: #E6F1FB;
+  border-color: #185FA5;
+  transform: translateX(-2px);
+}
+
+.legal-back-btn ion-icon {
+  font-size: 18px;
+}
+
+/* Card */
+.legal-card {
+  background: #ffffff;
+  border-radius: 24px;
+  border: 1px solid #e8edf5;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+  padding: 48px;
+}
+
+@media (max-width: 600px) {
+  .legal-card {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+  .legal-page {
+    padding: 24px 0 48px;
+  }
+}
+
+/* Header */
+.legal-header {
+  border-bottom: 1px solid #f0f3f8;
+  padding-bottom: 28px;
+  margin-bottom: 36px;
+}
+
+.legal-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--eerie-black, #212121);
+  margin: 0 0 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legal-title ion-icon {
+  color: #185FA5;
+  font-size: 32px;
+}
+
+.legal-meta {
+  font-size: 13px;
+  color: var(--sonic-silver, #787878);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legal-meta ion-icon {
+  font-size: 16px;
+}
+
+/* Content */
+.legal-content h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--eerie-black, #212121);
+  margin: 36px 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-left: 4px solid #185FA5;
+  padding-left: 12px;
+}
+
+.legal-content h2:first-of-type {
+  margin-top: 0;
+}
+
+.legal-content p {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #4a5568;
+  margin: 0 0 20px;
+}
+
+.legal-content ul,
+.legal-content ol {
+  padding-left: 20px;
+  margin: 0 0 24px;
+}
+
+.legal-content li {
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #4a5568;
+  margin-bottom: 10px;
+}
+
+.legal-content strong {
+  color: var(--eerie-black, #212121);
+  font-weight: 600;
+}
+
+/* Callout Box */
+.legal-callout {
+  background: #f8fafc;
+  border-left: 4px solid #185FA5;
+  padding: 20px;
+  border-radius: 0 12px 12px 0;
+  margin: 24px 0;
+}
+
+.legal-callout p {
+  margin: 0;
+  font-size: 14px;
+  color: #334155;
+  font-style: italic;
+}
+
+/* Accordion FAQ */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.faq-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  overflow: hidden;
+  transition: all 0.25s ease;
+  background: #fff;
+}
+
+.faq-item.active {
+  border-color: #185FA5;
+  box-shadow: 0 4px 12px rgba(24, 95, 165, 0.05);
+}
+
+.faq-trigger {
+  width: 100%;
+  padding: 20px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+}
+
+.faq-question {
+  font-size: 15.5px;
+  font-weight: 600;
+  color: var(--eerie-black, #212121);
+  margin: 0;
+  padding-right: 16px;
+  transition: color 0.2s;
+}
+
+.faq-item:hover .faq-question {
+  color: #185FA5;
+}
+
+.faq-icon {
+  font-size: 20px;
+  color: var(--sonic-silver, #787878);
+  transition: transform 0.25s ease, color 0.25s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.faq-item.active .faq-icon {
+  transform: rotate(180deg);
+  color: #185FA5;
+}
+
+.faq-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.faq-content-inner {
+  padding: 0 24px 20px;
+  font-size: 14.5px;
+  line-height: 1.7;
+  color: #4a5568;
+  border-top: 1px solid transparent;
+}
+
+.faq-item.active .faq-content-inner {
+  border-top-color: #f1f5f9;
+}

@@ -73,33 +73,33 @@ export default function Footer() {
             <p className="footer-col-title">Perusahaan</p>
             <ul className="footer-links">
               <li>
-                <a href="#">
-                  <ion-icon name="information-circle-outline" aria-hidden="true"></ion-icon>
-                  Tentang Kami
-                </a>
+                <Link href="/faq">
+                  <ion-icon name="help-circle-outline" aria-hidden="true"></ion-icon>
+                  FAQ / Bantuan
+                </Link>
               </li>
               <li>
-                <a href="#">
-                  <ion-icon name="business-outline" aria-hidden="true"></ion-icon>
-                  Brand Partner
-                </a>
+                <Link href="/refund-policy">
+                  <ion-icon name="swap-horizontal-outline" aria-hidden="true"></ion-icon>
+                  Kebijakan Refund
+                </Link>
               </li>
               <li>
-                <a href="#">
+                <Link href="/terms-and-conditions">
                   <ion-icon name="document-text-outline" aria-hidden="true"></ion-icon>
-                  Cara Pemesanan
-                </a>
+                  Syarat & Ketentuan
+                </Link>
               </li>
               <li>
-                <a href="#">
-                  <ion-icon name="car-outline" aria-hidden="true"></ion-icon>
-                  Pengiriman
-                </a>
+                <Link href="/privacy-policy">
+                  <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
+                  Kebijakan Privasi
+                </Link>
               </li>
               <li>
-                <a href="#">
+                <a href="tel:+6285176931330">
                   <ion-icon name="headset-outline" aria-hidden="true"></ion-icon>
-                  Kontak
+                  Kontak Layanan
                 </a>
               </li>
             </ul>
@@ -120,6 +120,20 @@ export default function Footer() {
                   labkimiajkt@gmail.com
                 </a>
               </li>
+              <li>
+                <div className="footer-address">
+                  <ion-icon name="location-outline" aria-hidden="true"></ion-icon>
+                  <span>
+                    Jl. KH. Hasyim Ashari, RT.003/RW.001, Cipondoh, Kec. Cipondoh, Kota Tangerang, Banten 15148
+                  </span>
+                </div>
+              </li>
+              <li>
+                <div className="footer-hours">
+                  <ion-icon name="time-outline" aria-hidden="true"></ion-icon>
+                  <span>Senin - Sabtu: 09:00 - 17:00 WIB</span>
+                </div>
+              </li>
             </ul>
             <div className="cert-badge">
               <ion-icon name="shield-checkmark-outline" aria-hidden="true"></ion-icon>
@@ -131,9 +145,10 @@ export default function Footer() {
         <div className="footer-bottom">
           <p className="copyright">© 2026 <span>labkimiaJKT</span>. Hak cipta dilindungi.</p>
           <div className="legal-links">
-            <a href="#">Kebijakan Privasi</a>
-            <a href="#">Syarat & Ketentuan</a>
-            <a href="#">Disclaimer</a>
+            <Link href="/privacy-policy">Kebijakan Privasi</Link>
+            <Link href="/terms-and-conditions">Syarat & Ketentuan</Link>
+            <Link href="/refund-policy">Kebijakan Refund</Link>
+            <Link href="/faq">FAQ</Link>
           </div>
         </div>
       </div>
